@@ -1,8 +1,9 @@
 package core
 
 var Lambda KarnaLambdas
+var AGW KarnaAPIGateway
 
 func init() {
-	Lambda.init()
-	Lambda.BuildLambdaTree()
+	AGW.init()
+	AGW.BuildAGWTree()
 }

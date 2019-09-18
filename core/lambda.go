@@ -14,7 +14,7 @@ import (
 //BuildLambdaTree => Will Build Lambda tree for Karna model.
 func (lambdaModel *KarnaLambdas) BuildLambdaTree() []KarnaLambda {
 	var wg sync.WaitGroup
-	functions := getFunctions(lambdaModel)
+	functions := lambdaModel.getFunctions()
 
 	modelizedFunctions := make([]KarnaLambda, len(functions))
 
@@ -62,10 +62,10 @@ func (lambdaModel *KarnaLambdas) fetchDependencies(function *KarnaLambda, wg *sy
 	wg.Done()
 }
 
-func getFunctions(model *KarnaLambdas) (functions []lambda.FunctionConfiguration) {
+func (lambdaModel *KarnaLambdas) getFunctions() (functions []lambda.FunctionConfiguration) {
 	input := &lambda.ListFunctionsInput{}
 
-	req := model.Client.ListFunctionsRequest(input)
+	req := lambdaModel.Client.ListFunctionsRequest(input)
 
 	response, err := req.Send(context.Background())
 

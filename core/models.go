@@ -1,9 +1,16 @@
 package core
 
-import "github.com/aws/aws-sdk-go-v2/service/lambda"
+import (
+	"github.com/aws/aws-sdk-go-v2/service/apigateway"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+)
 
 type KarnaLambdas struct {
 	Client *lambda.Client
+}
+
+type KarnaAPIGateway struct {
+	Client *apigateway.Client
 }
 
 type KarnaLambda struct {
@@ -33,4 +40,17 @@ type awsPolicy struct {
 	Version   string
 	ID        string
 	Statement []awsPolicyStatement
+}
+
+type KarnaAGWStage struct {
+	Name         string
+	Stage        string
+	Uuid         string
+	Distribution string
+}
+
+type KarnaAGWAPI struct {
+	API       apigateway.RestApi
+	Resources []map[string]interface{}
+	Stages    []KarnaAGWStage
 }

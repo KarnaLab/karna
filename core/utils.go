@@ -58,3 +58,12 @@ func uniq(slice []string) (uniqValues []string) {
 
 	return
 }
+
+func findStage(stages []KarnaAGWStage, stage string) (index int) {
+	for i, s := range stages {
+		if s.Stage == stage {
+			index = i
+		}
+	}
+	return
+}
