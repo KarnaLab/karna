@@ -34,9 +34,9 @@ var cmdViz = &cobra.Command{
 
 var cmdVizShow = &cobra.Command{
 	Use:   "show",
-	Short: "Use Karna Viz to build a Lambda tree on Neo4J.",
-	Long: `Karna Viz will build a graph on top of your AWS resources and build
-	this tree into Neo4J.`,
+	Short: "Feed Neo4J with Lambda tree.",
+	Long: `This command will call AWS services with your IAM role to build the Lambda
+	tree and its dependencies.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Karna Viz show")
 	},
@@ -44,9 +44,8 @@ var cmdVizShow = &cobra.Command{
 
 var cmdVizCleanup = &cobra.Command{
 	Use:   "cleanup",
-	Short: "Use Karna Viz to build a Lambda tree on Neo4J.",
-	Long: `Karna Viz will build a graph on top of your AWS resources and build
-	this tree into Neo4J.`,
+	Short: "Clean Neo4J database.",
+	Long:  "This subcommand will remove all Neo4J nodes.",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Karna Viz cleanup")
 	},

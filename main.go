@@ -1,7 +1,12 @@
 package main
 
-import "karna/cmd"
+import (
+	"fmt"
+	"karna/cmd"
+	"karna/core"
+)
 
 func main() {
 	cmd.Execute()
+	fmt.Println(core.Lambda)
 }
