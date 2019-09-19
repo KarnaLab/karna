@@ -20,7 +20,7 @@ func (agw *KarnaAPIGateway) init() {
 }
 
 //BuildAGWTree => Will Build APIGateway tree for Karna model.
-func (agw *KarnaAPIGateway) BuildAGWTree() {
+func (agw *KarnaAPIGateway) BuildAGWTree() []KarnaAGWAPI {
 	var wg sync.WaitGroup
 	apis := agw.getAPIS()
 
@@ -43,6 +43,8 @@ func (agw *KarnaAPIGateway) BuildAGWTree() {
 	}
 
 	wg.Wait()
+
+	return modelizedAPIS
 }
 
 func (agw *KarnaAPIGateway) fetchDependencies(api *KarnaAGWAPI, wg *sync.WaitGroup) {
