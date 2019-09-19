@@ -122,3 +122,22 @@ func (lambdaModel *KarnaLambdas) getPolicy(policies chan map[string][]string, fu
 
 	policies <- dependencies
 }
+
+func (lambdaModel *KarnaLambdas) UpdateFunctionCode(deployment *KarnaDeployment, archivePath string) (err error) {
+	//	part, _ := ioutil.ReadFile(archivePath)
+
+	input := &lambda.UpdateFunctionCodeInput{
+		FunctionName: aws.String(deployment.FunctionName),
+		S3Bucket:     aws.String(deployment.Bucket),
+		S3Key:        aws.String(deployment.File),
+		Publish:      aws.Bool(true),
+		//ZipFile:      part,
+	}
+
+	fmt.Println(input)
+	req := lambdaModel.Client.UpdateFunctionCodeRequest(input)
+
+	_, err = req.Send(context.Background())
+
+	return
+}

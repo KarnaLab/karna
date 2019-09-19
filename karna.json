@@ -3,9 +3,9 @@
   "deployments": [
     {
       "src": "services",
-      "key": "public-app",
+      "key": "avgTest",
       "file": "lambda.zip",
-      "functionName": "public-app",
+      "functionName": "avgTest",
       "aliases": {
         "dev": "$LATEST",
         "prod": "fixed@update"

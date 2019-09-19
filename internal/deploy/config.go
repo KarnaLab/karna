@@ -38,9 +38,9 @@ func getConfigFile() (configFile *core.KarnaConfigFile) {
 	return
 }
 
-func getTargetDeployment(config *core.KarnaConfigFile) (deployment *core.KarnaDeployment) {
+func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployment *core.KarnaDeployment) {
 	for _, d := range config.Deployments {
-		if d.FunctionName == "public-app" {
+		if d.FunctionName == *target {
 			deployment = &d
 		}
 	}

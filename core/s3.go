@@ -2,10 +2,12 @@ package core
 
 import (
 	"context"
-	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 func (karnaS3 *KarnaS3) init() {
@@ -18,17 +20,17 @@ func (karnaS3 *KarnaS3) init() {
 	karnaS3.Client = s3.New(cfg)
 }
 
-func (karnaS3 *KarnaS3) Upload(path) {
-	input := &s3.UploadPartInput{}
-
-	req := karnaS3.Client.UploadPartRequest(input)
-
-	response, err := req.Send(context.Background())
-
-	if err != nil {
-		// Abort upload.
-		panic(err.Error())
+func (karnaS3 *KarnaS3) Upload(deployment *KarnaDeployment, archivePath string) (err error) {
+	part, _ := ioutil.ReadFile(archivePath)
+	input := &s3.PutObjectInput{
+		Body:   aws.ReadSeekCloser(strings.NewReader(string(part))),
+		Key:    aws.String(deployment.File),
+		Bucket: aws.String(deployment.Bucket),
 	}
 
-	fmt.Println(response)
+	req := karnaS3.Client.PutObjectRequest(input)
+
+	_, err = req.Send(context.Background())
+
+	return
 }
