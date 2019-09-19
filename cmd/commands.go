@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	deploy "karna/internal/deploy"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ var cmdDeploy = &cobra.Command{
 		target, _ := cmd.Flags().GetString("target")
 		alias, _ := cmd.Flags().GetString("alias")
 
-		fmt.Println("Karna deploy", target, alias)
+		deploy.Run(&target, &alias)
 	},
 }
 

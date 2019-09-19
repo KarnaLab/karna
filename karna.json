@@ -1,0 +1,16 @@
+{
+  "global": {},
+  "deployments": [
+    {
+      "src": "services",
+      "key": "public-app",
+      "file": "lambda.zip",
+      "functionName": "public-app",
+      "aliases": {
+        "dev": "$LATEST",
+        "prod": "fixed@update"
+      },
+      "bucket": "karbonn-test"
+    }
+  ]
+}
