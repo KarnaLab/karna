@@ -37,8 +37,6 @@ func Run(target *string, alias *string) {
 		fmt.Println(err.Error())
 	}
 
-	//ProcessAlias
-	// - updateAlias or createAlias
 	//Prune functions
 
 }

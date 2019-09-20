@@ -8,6 +8,7 @@
       "functionName": "avgTest",
       "aliases": {
         "dev": "test",
+        "yo": "4",
         "prod": "fixed@update"
       }
     }

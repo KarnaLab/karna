@@ -197,7 +197,7 @@ func (lambdaModel *KarnaLambdas) SyncAlias(deployment *KarnaDeployment, alias st
 
 	aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 
-	if a := findAlias(aliases, deployment.Aliases[alias]); a == nil {
+	if a := findAlias(aliases, alias); a == nil {
 		fmt.Println("create alias")
 		lambdaModel.createAlias(deployment, alias)
 	} else {
@@ -232,13 +232,27 @@ func (lambdaModel *KarnaLambdas) createAlias(deployment *KarnaDeployment, alias 
 }
 
 func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias string) (err error) {
+	var version string
 
 	if deployment.Aliases[alias] == "fixed@update" {
 		fmt.Println("fixed@update")
-		//
-	} else {
-
 	}
+
+	if deployment.Aliases[alias] == "fixed@update" || len(deployment.Aliases[alias]) == 0 {
+		version = "$LATEST"
+	} else {
+		version = deployment.Aliases[alias]
+	}
+
+	input := &lambda.UpdateAliasInput{
+		FunctionName:    aws.String(deployment.FunctionName),
+		Name:            aws.String(alias),
+		FunctionVersion: aws.String(version),
+	}
+
+	req := lambdaModel.Client.UpdateAliasRequest(input)
+
+	_, err = req.Send(context.Background())
 
 	return
 }
