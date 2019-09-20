@@ -88,3 +88,10 @@ type KarnaConfigFile struct {
 	Deployments []KarnaDeployment `json:"deployments"`
 	Path        string
 }
+
+type Query struct {
+	Queries     []string
+	QueriesChan chan []string
+	Args        []map[string]interface{}
+	ArgsChan    chan []map[string]interface{}
+}

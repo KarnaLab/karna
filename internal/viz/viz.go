@@ -5,7 +5,7 @@ import (
 )
 
 func Run() {
-
+	buildLambdaGraph()
 }
 
 func Cleanup() {

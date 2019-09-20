@@ -12,13 +12,6 @@ const (
 	port     = "7687"
 )
 
-type Query struct {
-	Queries     []string
-	QueriesChan chan []string
-	Args        []map[string]interface{}
-	ArgsChan    chan []map[string]interface{}
-}
-
 func createConnection() bolt.Conn {
 	driver := bolt.NewDriver()
 	con, err := driver.OpenNeo(protocol + "://" + username + ":" + password + "@" + host + ":" + port)
