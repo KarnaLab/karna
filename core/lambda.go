@@ -291,6 +291,7 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 	if deployment.Prune.Keep > 0 {
 		var versionsWithAliases []int
 		var versionsToPrune []int
+		var versionsToKeep []int
 
 		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
 		aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
@@ -301,7 +302,6 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 		}
 
 		sort.Ints(versionsWithAliases)
-		var versionsToKeep []int
 
 		for _, v := range versionsWithAliases {
 			step := deployment.Prune.Keep
@@ -311,6 +311,7 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 			if min <= 1 {
 				min = 1
 			}
+
 			rangeOfVersions := makeRange(min, max)
 			versionsToKeep = append(versionsToKeep, rangeOfVersions...)
 		}
@@ -335,9 +336,8 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 
 			req := lambdaModel.Client.DeleteFunctionRequest(input)
 
-			_, err := req.Send(context.Background())
+			_, err = req.Send(context.Background())
 
-			fmt.Println(err)
 		}
 	}
 

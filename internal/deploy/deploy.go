@@ -44,6 +44,10 @@ func Run(target *string, alias *string) {
 	}
 
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
-		core.Lambda.Prune(targetDeployment)
+		err := core.Lambda.Prune(targetDeployment)
+
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 }

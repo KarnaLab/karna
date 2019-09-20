@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	deploy "karna/internal/deploy"
+	"karna/internal/deploy"
+	"karna/internal/viz"
 
 	"github.com/spf13/cobra"
 )
@@ -28,9 +29,6 @@ var cmdViz = &cobra.Command{
 	Long: `Karna Viz will build a graph on top of your AWS resources and build
 	this tree into Neo4J.`,
 	Args: cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Karna Viz")
-	},
 }
 
 var cmdVizShow = &cobra.Command{
@@ -39,7 +37,7 @@ var cmdVizShow = &cobra.Command{
 	Long: `This command will call AWS services with your IAM role to build the Lambda
 	tree and its dependencies.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Karna Viz show")
+		viz.Run()
 	},
 }
 
@@ -48,7 +46,7 @@ var cmdVizCleanup = &cobra.Command{
 	Short: "Clean Neo4J database.",
 	Long:  "This subcommand will remove all Neo4J nodes.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Karna Viz cleanup")
+		viz.Cleanup()
 	},
 }
 
