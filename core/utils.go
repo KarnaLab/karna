@@ -78,3 +78,20 @@ func findAlias(aliases []lambda.AliasConfiguration, aliasName string) (alias *la
 	}
 	return
 }
+
+func makeRange(min, max int) []int {
+	a := make([]int, max-min+1)
+	for i := range a {
+		a[i] = min + i
+	}
+	return a
+}
+
+func findInt(needle int, haystack []int) (found bool) {
+	for _, value := range haystack {
+		if needle == value {
+			found = true
+		}
+	}
+	return
+}

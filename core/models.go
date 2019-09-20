@@ -70,13 +70,18 @@ type KarnaAGWAPI struct {
 	Stages    []KarnaAGWStage
 }
 
+type KarnaDeploymentPrune struct {
+	Alias bool `json:"alias"`
+	Keep  int  `json:"keep"`
+}
 type KarnaDeployment struct {
-	Src          string            `json:"src"`
-	Key          string            `json:"key"`
-	File         string            `json:"file"`
-	FunctionName string            `json:"functionName"`
-	Aliases      map[string]string `json:"aliases"`
-	Bucket       string            `json:"bucket"`
+	Src          string               `json:"src"`
+	Key          string               `json:"key"`
+	File         string               `json:"file"`
+	FunctionName string               `json:"functionName"`
+	Aliases      map[string]string    `json:"aliases"`
+	Bucket       string               `json:"bucket"`
+	Prune        KarnaDeploymentPrune `json:"prune"`
 }
 type KarnaConfigFile struct {
 	Global      map[string]string `json:"global"`

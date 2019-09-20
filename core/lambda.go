@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"sort"
+	"strconv"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -179,6 +181,20 @@ func (lambdaModel *KarnaLambdas) GetFunctionByFunctionName(functionName string) 
 	return
 }
 
+func (lambdaModel *KarnaLambdas) GetVersionsByFunction(functionName string) (versions []lambda.FunctionConfiguration, err error) {
+	input := &lambda.ListVersionsByFunctionInput{
+		FunctionName: aws.String(functionName),
+	}
+
+	req := lambdaModel.Client.ListVersionsByFunctionRequest(input)
+
+	response, err := req.Send(context.Background())
+
+	versions = response.Versions
+
+	return
+}
+
 func (lambdaModel *KarnaLambdas) GetAliasesByFunctionName(functionName string) (aliases []lambda.AliasConfiguration, err error) {
 	input := &lambda.ListAliasesInput{
 		FunctionName: aws.String(functionName),
@@ -235,11 +251,8 @@ func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias 
 	var version string
 
 	if deployment.Aliases[alias] == "fixed@update" {
-		fmt.Println("fixed@update")
-	}
-
-	if deployment.Aliases[alias] == "fixed@update" || len(deployment.Aliases[alias]) == 0 {
-		version = "$LATEST"
+		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
 	}
@@ -253,6 +266,80 @@ func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias 
 	req := lambdaModel.Client.UpdateAliasRequest(input)
 
 	_, err = req.Send(context.Background())
+
+	return
+}
+
+func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) {
+
+	if deployment.Prune.Alias {
+		aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+
+		for _, a := range aliases {
+			if _, ok := deployment.Aliases[*a.Name]; !ok {
+				input := &lambda.DeleteAliasInput{
+					Name:         aws.String(*a.Name),
+					FunctionName: aws.String(deployment.FunctionName),
+				}
+
+				req := lambdaModel.Client.DeleteAliasRequest(input)
+				_, err = req.Send(context.Background())
+			}
+		}
+	}
+
+	if deployment.Prune.Keep > 0 {
+		var versionsWithAliases []int
+		var versionsToPrune []int
+
+		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+
+		for _, alias := range aliases {
+			version, _ := strconv.Atoi(*alias.FunctionVersion)
+			versionsWithAliases = append(versionsWithAliases, version)
+		}
+
+		sort.Ints(versionsWithAliases)
+		var versionsToKeep []int
+
+		for _, v := range versionsWithAliases {
+			step := deployment.Prune.Keep
+			min := v - step
+			max := v + step
+
+			if min <= 1 {
+				min = 1
+			}
+			rangeOfVersions := makeRange(min, max)
+			versionsToKeep = append(versionsToKeep, rangeOfVersions...)
+		}
+
+		for _, f := range versions {
+			version, err := strconv.Atoi(*f.Version)
+
+			if err == nil {
+				if ok := findInt(version, versionsToKeep); !ok {
+					versionsToPrune = append(versionsToPrune, version)
+				}
+			}
+		}
+
+		for _, version := range versionsToPrune {
+			versionToString := strconv.Itoa(version)
+
+			input := &lambda.DeleteFunctionInput{
+				FunctionName: aws.String(deployment.FunctionName),
+				Qualifier:    aws.String(versionToString),
+			}
+
+			req := lambdaModel.Client.DeleteFunctionRequest(input)
+
+			_, err := req.Send(context.Background())
+
+			fmt.Println(err)
+		}
+	}
 
 	return
 }

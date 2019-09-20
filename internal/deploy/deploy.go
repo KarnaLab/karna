@@ -31,12 +31,19 @@ func Run(target *string, alias *string) {
 		fmt.Println(err.Error())
 	}
 
-	err = core.Lambda.SyncAlias(targetDeployment, *alias)
-	fmt.Println(err)
+	err = core.Lambda.PublishFunction(targetDeployment)
+
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
-	//Prune functions
+	err = core.Lambda.SyncAlias(targetDeployment, *alias)
 
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
+		core.Lambda.Prune(targetDeployment)
+	}
 }
