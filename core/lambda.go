@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -124,20 +125,120 @@ func (lambdaModel *KarnaLambdas) getPolicy(policies chan map[string][]string, fu
 }
 
 func (lambdaModel *KarnaLambdas) UpdateFunctionCode(deployment *KarnaDeployment, archivePath string) (err error) {
-	//	part, _ := ioutil.ReadFile(archivePath)
 
-	input := &lambda.UpdateFunctionCodeInput{
-		FunctionName: aws.String(deployment.FunctionName),
-		S3Bucket:     aws.String(deployment.Bucket),
-		S3Key:        aws.String(deployment.File),
-		Publish:      aws.Bool(true),
-		//ZipFile:      part,
+	input := &lambda.UpdateFunctionCodeInput{}
+
+	if deployment.Bucket != "" {
+		input = &lambda.UpdateFunctionCodeInput{
+			FunctionName: aws.String(deployment.FunctionName),
+			S3Bucket:     aws.String(deployment.Bucket),
+			S3Key:        aws.String(deployment.File),
+			Publish:      aws.Bool(true),
+		}
+	} else {
+		part, _ := ioutil.ReadFile(archivePath)
+
+		input = &lambda.UpdateFunctionCodeInput{
+			FunctionName: aws.String(deployment.FunctionName),
+			Publish:      aws.Bool(true),
+			ZipFile:      part,
+		}
 	}
 
-	fmt.Println(input)
 	req := lambdaModel.Client.UpdateFunctionCodeRequest(input)
 
 	_, err = req.Send(context.Background())
+
+	return
+}
+
+func (lambdaModel *KarnaLambdas) PublishFunction(deployment *KarnaDeployment) (err error) {
+
+	input := &lambda.PublishVersionInput{
+		FunctionName: aws.String(deployment.FunctionName),
+		Description:  aws.String("gloup"),
+	}
+
+	req := lambdaModel.Client.PublishVersionRequest(input)
+
+	_, err = req.Send(context.Background())
+
+	return
+}
+
+func (lambdaModel *KarnaLambdas) GetFunctionByFunctionName(functionName string) (err error) {
+	input := &lambda.GetFunctionConfigurationInput{
+		FunctionName: aws.String(functionName),
+	}
+
+	req := lambdaModel.Client.GetFunctionConfigurationRequest(input)
+
+	response, err := req.Send(context.Background())
+
+	fmt.Println(response)
+	return
+}
+
+func (lambdaModel *KarnaLambdas) GetAliasesByFunctionName(functionName string) (aliases []lambda.AliasConfiguration, err error) {
+	input := &lambda.ListAliasesInput{
+		FunctionName: aws.String(functionName),
+	}
+
+	req := lambdaModel.Client.ListAliasesRequest(input)
+
+	response, err := req.Send(context.Background())
+
+	aliases = response.Aliases
+
+	return
+}
+
+func (lambdaModel *KarnaLambdas) SyncAlias(deployment *KarnaDeployment, alias string) (err error) {
+
+	aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+
+	if a := findAlias(aliases, deployment.Aliases[alias]); a == nil {
+		fmt.Println("create alias")
+		lambdaModel.createAlias(deployment, alias)
+	} else {
+		fmt.Println("update alias")
+		lambdaModel.updateAlias(deployment, alias)
+	}
+
+	return
+}
+
+func (lambdaModel *KarnaLambdas) createAlias(deployment *KarnaDeployment, alias string) (err error) {
+	var version string
+
+	if deployment.Aliases[alias] == "fixed@update" || len(deployment.Aliases[alias]) == 0 {
+		version = "$LATEST"
+	} else {
+		version = deployment.Aliases[alias]
+	}
+
+	fmt.Println(deployment.Aliases[alias] == "fixed@update", version)
+	input := &lambda.CreateAliasInput{
+		FunctionName:    aws.String(deployment.FunctionName),
+		Name:            aws.String(alias),
+		FunctionVersion: aws.String(version),
+	}
+
+	req := lambdaModel.Client.CreateAliasRequest(input)
+
+	_, err = req.Send(context.Background())
+
+	return
+}
+
+func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias string) (err error) {
+
+	if deployment.Aliases[alias] == "fixed@update" {
+		fmt.Println("fixed@update")
+		//
+	} else {
+
+	}
 
 	return
 }

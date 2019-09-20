@@ -7,10 +7,9 @@
       "file": "lambda.zip",
       "functionName": "avgTest",
       "aliases": {
-        "dev": "$LATEST",
+        "dev": "test",
         "prod": "fixed@update"
-      },
-      "bucket": "karbonn-test"
+      }
     }
   ]
 }

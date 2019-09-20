@@ -3,6 +3,8 @@ package core
 import (
 	"regexp"
 	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 )
 
 func findAPIGatewayID(statement awsPolicyStatement) (apiID string) {
@@ -63,6 +65,15 @@ func findStage(stages []KarnaAGWStage, stage string) (index int) {
 	for i, s := range stages {
 		if s.Stage == stage {
 			index = i
+		}
+	}
+	return
+}
+
+func findAlias(aliases []lambda.AliasConfiguration, aliasName string) (alias *lambda.AliasConfiguration) {
+	for _, a := range aliases {
+		if *a.Name == aliasName {
+			alias = &a
 		}
 	}
 	return

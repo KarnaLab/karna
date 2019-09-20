@@ -47,8 +47,13 @@ func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployme
 	return
 }
 
-func checkRequirements(deployment *core.KarnaDeployment) {
-	requirements := [...]string{"FunctionName", "Key", "File", "Aliases", "Bucket"}
+func checkRequirements(deployment *core.KarnaDeployment, alias string) {
+	requirements := [...]string{"FunctionName", "Key", "File", "Aliases", "Src"}
+
+	if deployment.Aliases[alias] == "" {
+		panic("Alias do not match with the config file.")
+	}
+
 	for _, requirement := range requirements {
 
 		a := reflect.Indirect(reflect.ValueOf(deployment)).FieldByName(requirement)
