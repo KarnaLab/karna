@@ -6,6 +6,8 @@ import (
 
 func Run() {
 	buildLambdaGraph()
+	buildAGWGraph()
+	buildEC2Tree()
 }
 
 func Cleanup() {

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	baseQuery = "MERGE (lambda:Lambda { uuid: {FunctionArn}, FunctionArn: {FunctionArn}, FunctionName: {FunctionName} }) WITH lambda"
+	baseLambdaQuery = "MERGE (lambda:Lambda { uuid: {FunctionArn}, FunctionArn: {FunctionArn}, FunctionName: {FunctionName} }) WITH lambda"
 
 	layersQuery = `
 	UNWIND {layers} AS layer
@@ -60,7 +60,7 @@ func buildLambdaGraph() {
 
 	lambdaTree := core.Lambda.BuildLambdaTree()
 
-	go buildQuery(&query, lambdaTree)
+	go buildLambdaQuery(&query, lambdaTree)
 
 	<-query.QueriesChan
 	<-query.ArgsChan
@@ -68,7 +68,7 @@ func buildLambdaGraph() {
 	core.Bulk(query.Queries, query.Args)
 }
 
-func buildQuery(query *core.Query, functions []core.KarnaLambda) {
+func buildLambdaQuery(query *core.Query, functions []core.KarnaLambda) {
 	for _, function := range functions {
 		var versions []map[string]interface{}
 		var layers []map[string]interface{}
@@ -107,7 +107,7 @@ func buildQuery(query *core.Query, functions []core.KarnaLambda) {
 }
 
 func buildRequest(function core.KarnaLambda) (query string) {
-	query = baseQuery
+	query = baseLambdaQuery
 
 	if len(function.VPC) > 0 {
 		query = query + vpcQuery
