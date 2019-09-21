@@ -2,12 +2,17 @@ package viz
 
 import (
 	"karna/core"
+	"sync"
 )
 
 func Run() {
-	buildLambdaGraph()
-	buildAGWGraph()
-	buildEC2Tree()
+	var wg sync.WaitGroup
+
+	go buildLambdaGraph(&wg)
+	go buildAGWGraph(&wg)
+	go buildEC2Tree(&wg)
+
+	wg.Wait()
 }
 
 func Cleanup() {

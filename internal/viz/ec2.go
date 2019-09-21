@@ -3,6 +3,7 @@ package viz
 import (
 	"awsgraphviz/utils"
 	"karna/core"
+	"sync"
 )
 
 const (
@@ -50,7 +51,7 @@ func buildEC2Query(query *core.Query, ec2 core.KarnaEC2Model) {
 	query.ArgsChan <- query.Args
 }
 
-func buildEC2Tree() {
+func buildEC2Tree(wg *sync.WaitGroup) {
 	var query = core.Query{
 		Args:        []map[string]interface{}{},
 		Queries:     []string{},
@@ -66,4 +67,5 @@ func buildEC2Tree() {
 	<-query.ArgsChan
 
 	utils.Bulk(query.Queries, query.Args)
+	wg.Done()
 }

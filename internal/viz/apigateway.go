@@ -2,6 +2,7 @@ package viz
 
 import (
 	"karna/core"
+	"sync"
 )
 
 const (
@@ -80,7 +81,7 @@ func buildAGWQuery(query *core.Query, apis []core.KarnaAGWAPI) {
 	query.ArgsChan <- query.Args
 }
 
-func buildAGWGraph() {
+func buildAGWGraph(wg *sync.WaitGroup) {
 	var query = core.Query{
 		Args:        []map[string]interface{}{},
 		Queries:     []string{},
@@ -95,4 +96,5 @@ func buildAGWGraph() {
 	<-query.ArgsChan
 
 	core.Bulk(query.Queries, query.Args)
+	wg.Done()
 }

@@ -2,6 +2,7 @@ package viz
 
 import (
 	"karna/core"
+	"sync"
 )
 
 const (
@@ -50,7 +51,7 @@ const (
 	endQuery = " RETURN lambda"
 )
 
-func buildLambdaGraph() {
+func buildLambdaGraph(wg *sync.WaitGroup) {
 	var query = core.Query{
 		Args:        []map[string]interface{}{},
 		Queries:     []string{},
@@ -66,6 +67,7 @@ func buildLambdaGraph() {
 	<-query.ArgsChan
 
 	core.Bulk(query.Queries, query.Args)
+	wg.Done()
 }
 
 func buildLambdaQuery(query *core.Query, functions []core.KarnaLambda) {
