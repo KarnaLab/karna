@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"karna/internal/api"
 	"karna/internal/deploy"
 	"karna/internal/viz"
 
@@ -67,7 +68,7 @@ var cmdAPIStart = &cobra.Command{
 	Long: `Karna API will start a WebServer which exposes a collection of
 	endpoints to build, interact, vizualize your Lambda architecture.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Karna start API")
+		api.Start()
 	},
 }
 
