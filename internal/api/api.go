@@ -1,8 +1,7 @@
 package api
 
-func Start() {
+//Run => Start Karna API.
+func Run() {
 	router := initRouter()
 	startServer(router)
 }
-
-func Stop() {}

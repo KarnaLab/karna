@@ -80,7 +80,7 @@ var cmdAPIStart = &cobra.Command{
 		core.LogSuccessMessage("Starting API in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		api.Start()
+		api.Run()
 	},
 }
 
@@ -100,6 +100,7 @@ func init() {
 	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz)
 }
 
+//Execute => Will register commands && execute the right one.
 func Execute() {
 	rootCmd.Execute()
 }

@@ -94,7 +94,7 @@ func (karnaAGW *KarnaAPIGatewayModel) getStagesByAPI(stagesChan chan []KarnaAGWS
 	for _, stage := range results.Item {
 		stages = append(stages, KarnaAGWStage{
 			Name:  *stage.StageName,
-			Uuid:  id + *stage.StageName,
+			UUID:  id + *stage.StageName,
 			Stage: *stage.StageName,
 		})
 	}

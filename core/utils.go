@@ -54,7 +54,7 @@ func uniq(slice []string) (uniqValues []string) {
 		uniqMap[value] = true
 	}
 
-	for index, _ := range uniqMap {
+	for index := range uniqMap {
 		uniqValues = append(uniqValues, index)
 	}
 

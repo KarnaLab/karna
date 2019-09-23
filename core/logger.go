@@ -14,7 +14,7 @@ func LogSuccessMessage(message string) {
 		aurora.Bold(aurora.Blue(message)))
 }
 
-//LogSuccessMessage => Print into CLI an error message.
+//LogErrorMessage => Print into CLI an error message.
 func LogErrorMessage(message string) {
 	fmt.Printf("%s %s\n",
 		aurora.Bold(aurora.Green("> Karna:")),

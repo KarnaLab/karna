@@ -61,7 +61,7 @@ func buildAGWQuery(query *core.KarnaQuery, apis []core.KarnaAGWAPI) {
 		for _, stage := range api.Stages {
 			stages = append(stages, map[string]interface{}{
 				"Name":         stage.Name,
-				"Uuid":         stage.Uuid,
+				"Uuid":         stage.UUID,
 				"Distribution": stage.Distribution,
 			})
 		}

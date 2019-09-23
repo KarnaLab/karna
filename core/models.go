@@ -69,7 +69,7 @@ type awsPolicy struct {
 type KarnaAGWStage struct {
 	Name         string
 	Stage        string
-	Uuid         string
+	UUID         string
 	Distribution string
 }
 

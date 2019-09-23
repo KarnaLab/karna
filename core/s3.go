@@ -22,6 +22,7 @@ func (KarnaS3Model *KarnaS3Model) init() {
 	KarnaS3Model.Client = s3.New(cfg)
 }
 
+//Upload => Will upload to S3 specified archive.
 func (KarnaS3Model *KarnaS3Model) Upload(deployment *KarnaDeployment, archivePath string) (err error) {
 	part, _ := ioutil.ReadFile(archivePath)
 	input := &s3.PutObjectInput{

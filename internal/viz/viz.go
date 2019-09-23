@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//Run => Will build all AWS dependencies into trees and load them into Neo4J.
 func Run() (timeElapsed string) {
 	var wg sync.WaitGroup
 	startTime := time.Now()
@@ -22,6 +23,7 @@ func Run() (timeElapsed string) {
 	return
 }
 
+//Cleanup => Will detach delete all Neo4J nodes.
 func Cleanup() (timeElapsed string) {
 	startTime := time.Now()
 	core.CleanUp()
