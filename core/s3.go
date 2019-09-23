@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-func (karnaS3 *KarnaS3) init() {
+func (KarnaS3Model *KarnaS3Model) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
@@ -19,10 +19,10 @@ func (karnaS3 *KarnaS3) init() {
 		os.Exit(2)
 	}
 
-	karnaS3.Client = s3.New(cfg)
+	KarnaS3Model.Client = s3.New(cfg)
 }
 
-func (karnaS3 *KarnaS3) Upload(deployment *KarnaDeployment, archivePath string) (err error) {
+func (KarnaS3Model *KarnaS3Model) Upload(deployment *KarnaDeployment, archivePath string) (err error) {
 	part, _ := ioutil.ReadFile(archivePath)
 	input := &s3.PutObjectInput{
 		Body:   aws.ReadSeekCloser(strings.NewReader(string(part))),
@@ -30,7 +30,7 @@ func (karnaS3 *KarnaS3) Upload(deployment *KarnaDeployment, archivePath string) 
 		Bucket: aws.String(deployment.Bucket),
 	}
 
-	req := karnaS3.Client.PutObjectRequest(input)
+	req := KarnaS3Model.Client.PutObjectRequest(input)
 
 	_, err = req.Send(context.Background())
 

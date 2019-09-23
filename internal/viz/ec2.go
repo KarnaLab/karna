@@ -24,7 +24,7 @@ const (
     `
 )
 
-func buildEC2Query(query *core.Query, ec2 core.KarnaEC2Model) {
+func buildEC2Query(query *core.KarnaQuery, ec2 core.KarnaEC2) {
 	var subnets []map[string]interface{}
 
 	for _, subnet := range ec2.Subnets {
@@ -52,7 +52,7 @@ func buildEC2Query(query *core.Query, ec2 core.KarnaEC2Model) {
 }
 
 func buildEC2Tree(wg *sync.WaitGroup) {
-	var query = core.Query{
+	var query = core.KarnaQuery{
 		Args:        []map[string]interface{}{},
 		Queries:     []string{},
 		ArgsChan:    make(chan []map[string]interface{}),

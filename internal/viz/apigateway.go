@@ -44,7 +44,7 @@ const (
 )
 
 //TODO: Need to get domain names && modelize them into Neo4j.
-func buildAGWQuery(query *core.Query, apis []core.KarnaAGWAPI) {
+func buildAGWQuery(query *core.KarnaQuery, apis []core.KarnaAGWAPI) {
 	for _, api := range apis {
 		var hasDistribution bool
 		var stages []map[string]interface{}
@@ -82,7 +82,7 @@ func buildAGWQuery(query *core.Query, apis []core.KarnaAGWAPI) {
 }
 
 func buildAGWGraph(wg *sync.WaitGroup) {
-	var query = core.Query{
+	var query = core.KarnaQuery{
 		Args:        []map[string]interface{}{},
 		Queries:     []string{},
 		ArgsChan:    make(chan []map[string]interface{}),

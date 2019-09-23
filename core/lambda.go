@@ -16,9 +16,9 @@ import (
 )
 
 //BuildLambdaTree => Will Build Lambda tree for Karna model.
-func (lambdaModel *KarnaLambdas) BuildLambdaTree() []KarnaLambda {
+func (karnaLambdaModel *KarnaLambdaModel) BuildLambdaTree() []KarnaLambda {
 	var wg sync.WaitGroup
-	functions := lambdaModel.getFunctions()
+	functions := karnaLambdaModel.getFunctions()
 
 	modelizedFunctions := make([]KarnaLambda, len(functions))
 
@@ -35,7 +35,7 @@ func (lambdaModel *KarnaLambdas) BuildLambdaTree() []KarnaLambda {
 			Layers:                function.Layers,
 			VPC:                   vpc,
 		}
-		go lambdaModel.fetchDependencies(&modelizedFunctions[i], &wg)
+		go karnaLambdaModel.fetchDependencies(&modelizedFunctions[i], &wg)
 	}
 
 	wg.Wait()
@@ -43,7 +43,7 @@ func (lambdaModel *KarnaLambdas) BuildLambdaTree() []KarnaLambda {
 	return modelizedFunctions
 }
 
-func (lambdaModel *KarnaLambdas) init() {
+func (karnaLambdaModel *KarnaLambdaModel) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
@@ -51,15 +51,15 @@ func (lambdaModel *KarnaLambdas) init() {
 		os.Exit(2)
 	}
 
-	lambdaModel.Client = lambda.New(cfg)
+	karnaLambdaModel.Client = lambda.New(cfg)
 }
 
-func (lambdaModel *KarnaLambdas) fetchDependencies(function *KarnaLambda, wg *sync.WaitGroup) {
+func (karnaLambdaModel *KarnaLambdaModel) fetchDependencies(function *KarnaLambda, wg *sync.WaitGroup) {
 	versions := make(chan []lambda.FunctionConfiguration, 1)
 	policy := make(chan map[string][]string, 1)
 
-	go lambdaModel.getVersions(versions, *function.FunctionConfiguration.FunctionName)
-	go lambdaModel.getPolicy(policy, *function.FunctionConfiguration.FunctionArn)
+	go karnaLambdaModel.getVersions(versions, *function.FunctionConfiguration.FunctionName)
+	go karnaLambdaModel.getPolicy(policy, *function.FunctionConfiguration.FunctionArn)
 
 	function.Versions = <-versions
 	function.Policy = <-policy
@@ -67,10 +67,10 @@ func (lambdaModel *KarnaLambdas) fetchDependencies(function *KarnaLambda, wg *sy
 	wg.Done()
 }
 
-func (lambdaModel *KarnaLambdas) getFunctions() (functions []lambda.FunctionConfiguration) {
+func (karnaLambdaModel *KarnaLambdaModel) getFunctions() (functions []lambda.FunctionConfiguration) {
 	input := &lambda.ListFunctionsInput{}
 
-	req := lambdaModel.Client.ListFunctionsRequest(input)
+	req := karnaLambdaModel.Client.ListFunctionsRequest(input)
 
 	response, err := req.Send(context.Background())
 
@@ -83,11 +83,11 @@ func (lambdaModel *KarnaLambdas) getFunctions() (functions []lambda.FunctionConf
 	return
 }
 
-func (lambdaModel *KarnaLambdas) getVersions(versions chan []lambda.FunctionConfiguration, functionName string) {
+func (karnaLambdaModel *KarnaLambdaModel) getVersions(versions chan []lambda.FunctionConfiguration, functionName string) {
 	var listVersionsInput interface{}
 
 	listVersionsInput = &lambda.ListVersionsByFunctionInput{FunctionName: aws.String(functionName)}
-	request := lambdaModel.Client.ListVersionsByFunctionRequest(listVersionsInput.(*lambda.ListVersionsByFunctionInput))
+	request := karnaLambdaModel.Client.ListVersionsByFunctionRequest(listVersionsInput.(*lambda.ListVersionsByFunctionInput))
 
 	response, err := request.Send(context.Background())
 
@@ -99,13 +99,13 @@ func (lambdaModel *KarnaLambdas) getVersions(versions chan []lambda.FunctionConf
 	versions <- response.Versions
 }
 
-func (lambdaModel *KarnaLambdas) getPolicy(policies chan map[string][]string, functionArn string) {
+func (karnaLambdaModel *KarnaLambdaModel) getPolicy(policies chan map[string][]string, functionArn string) {
 	var policyInput interface{}
 	var policy awsPolicy
 	dependencies := make(map[string][]string, 1)
 
 	policyInput = &lambda.GetPolicyInput{FunctionName: aws.String(functionArn)}
-	request := lambdaModel.Client.GetPolicyRequest(policyInput.(*lambda.GetPolicyInput))
+	request := karnaLambdaModel.Client.GetPolicyRequest(policyInput.(*lambda.GetPolicyInput))
 
 	response, _ := request.Send(context.Background())
 
@@ -129,7 +129,20 @@ func (lambdaModel *KarnaLambdas) getPolicy(policies chan map[string][]string, fu
 	policies <- dependencies
 }
 
-func (lambdaModel *KarnaLambdas) UpdateFunctionCode(deployment *KarnaDeployment, archivePath string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) PublishFunction(deployment *KarnaDeployment) (err error) {
+	input := &lambda.PublishVersionInput{
+		FunctionName: aws.String(deployment.FunctionName),
+	}
+
+	req := karnaLambdaModel.Client.PublishVersionRequest(input)
+
+	_, err = req.Send(context.Background())
+
+	return
+}
+
+//UpdateFunctionCode => Expose UpdateFunctionCode to lambdaModel.
+func (karnaLambdaModel *KarnaLambdaModel) UpdateFunctionCode(deployment *KarnaDeployment, archivePath string) (err error) {
 	input := &lambda.UpdateFunctionCodeInput{}
 
 	if deployment.Bucket != "" {
@@ -149,32 +162,19 @@ func (lambdaModel *KarnaLambdas) UpdateFunctionCode(deployment *KarnaDeployment,
 		}
 	}
 
-	req := lambdaModel.Client.UpdateFunctionCodeRequest(input)
+	req := karnaLambdaModel.Client.UpdateFunctionCodeRequest(input)
 
 	_, err = req.Send(context.Background())
 
 	return
 }
 
-func (lambdaModel *KarnaLambdas) PublishFunction(deployment *KarnaDeployment) (err error) {
-	input := &lambda.PublishVersionInput{
-		FunctionName: aws.String(deployment.FunctionName),
-		Description:  aws.String("gloup"),
-	}
-
-	req := lambdaModel.Client.PublishVersionRequest(input)
-
-	_, err = req.Send(context.Background())
-
-	return
-}
-
-func (lambdaModel *KarnaLambdas) GetFunctionByFunctionName(functionName string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) GetFunctionByFunctionName(functionName string) (err error) {
 	input := &lambda.GetFunctionConfigurationInput{
 		FunctionName: aws.String(functionName),
 	}
 
-	req := lambdaModel.Client.GetFunctionConfigurationRequest(input)
+	req := karnaLambdaModel.Client.GetFunctionConfigurationRequest(input)
 
 	response, err := req.Send(context.Background())
 
@@ -182,12 +182,12 @@ func (lambdaModel *KarnaLambdas) GetFunctionByFunctionName(functionName string) 
 	return
 }
 
-func (lambdaModel *KarnaLambdas) GetVersionsByFunction(functionName string) (versions []lambda.FunctionConfiguration, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) GetVersionsByFunction(functionName string) (versions []lambda.FunctionConfiguration, err error) {
 	input := &lambda.ListVersionsByFunctionInput{
 		FunctionName: aws.String(functionName),
 	}
 
-	req := lambdaModel.Client.ListVersionsByFunctionRequest(input)
+	req := karnaLambdaModel.Client.ListVersionsByFunctionRequest(input)
 
 	response, err := req.Send(context.Background())
 
@@ -196,12 +196,12 @@ func (lambdaModel *KarnaLambdas) GetVersionsByFunction(functionName string) (ver
 	return
 }
 
-func (lambdaModel *KarnaLambdas) GetAliasesByFunctionName(functionName string) (aliases []lambda.AliasConfiguration, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) GetAliasesByFunctionName(functionName string) (aliases []lambda.AliasConfiguration, err error) {
 	input := &lambda.ListAliasesInput{
 		FunctionName: aws.String(functionName),
 	}
 
-	req := lambdaModel.Client.ListAliasesRequest(input)
+	req := karnaLambdaModel.Client.ListAliasesRequest(input)
 
 	response, err := req.Send(context.Background())
 
@@ -210,28 +210,28 @@ func (lambdaModel *KarnaLambdas) GetAliasesByFunctionName(functionName string) (
 	return
 }
 
-func (lambdaModel *KarnaLambdas) SyncAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) SyncAlias(deployment *KarnaDeployment, alias string) (err error) {
 
-	aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+	aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 
 	if a := findAlias(aliases, alias); a == nil {
 		LogSuccessMessage("Creation of alias: " + alias)
-		lambdaModel.createAlias(deployment, alias)
+		karnaLambdaModel.createAlias(deployment, alias)
 	} else {
 		LogSuccessMessage("Updating alias: " + alias)
-		lambdaModel.updateAlias(deployment, alias)
+		karnaLambdaModel.updateAlias(deployment, alias)
 	}
 
 	return
 }
 
-func (lambdaModel *KarnaLambdas) createAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeployment, alias string) (err error) {
 	var version string
 
 	if len(deployment.Aliases[alias]) == 0 {
 		version = "$LATEST"
 	} else if deployment.Aliases[alias] == "fixed@update" {
-		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
 		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
@@ -243,18 +243,18 @@ func (lambdaModel *KarnaLambdas) createAlias(deployment *KarnaDeployment, alias 
 		FunctionVersion: aws.String(version),
 	}
 
-	req := lambdaModel.Client.CreateAliasRequest(input)
+	req := karnaLambdaModel.Client.CreateAliasRequest(input)
 
 	_, err = req.Send(context.Background())
 
 	return
 }
 
-func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeployment, alias string) (err error) {
 	var version string
 
 	if deployment.Aliases[alias] == "fixed@update" {
-		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
 		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
@@ -266,16 +266,16 @@ func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias 
 		FunctionVersion: aws.String(version),
 	}
 
-	req := lambdaModel.Client.UpdateAliasRequest(input)
+	req := karnaLambdaModel.Client.UpdateAliasRequest(input)
 
 	_, err = req.Send(context.Background())
 
 	return
 }
 
-func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (err error) {
 	if deployment.Prune.Alias {
-		aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 
 		for _, a := range aliases {
 			if _, ok := deployment.Aliases[*a.Name]; !ok {
@@ -286,7 +286,7 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 					FunctionName: aws.String(deployment.FunctionName),
 				}
 
-				req := lambdaModel.Client.DeleteAliasRequest(input)
+				req := karnaLambdaModel.Client.DeleteAliasRequest(input)
 				_, err = req.Send(context.Background())
 			}
 		}
@@ -297,8 +297,8 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 		var versionsToPrune []int
 		var versionsToKeep []int
 
-		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
-		aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 
 		for _, alias := range aliases {
 			version, _ := strconv.Atoi(*alias.FunctionVersion)
@@ -342,7 +342,7 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 				Qualifier:    aws.String(versionToString),
 			}
 
-			req := lambdaModel.Client.DeleteFunctionRequest(input)
+			req := karnaLambdaModel.Client.DeleteFunctionRequest(input)
 
 			_, err = req.Send(context.Background())
 		}

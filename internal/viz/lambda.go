@@ -52,7 +52,7 @@ const (
 )
 
 func buildLambdaGraph(wg *sync.WaitGroup) {
-	var query = core.Query{
+	var query = core.KarnaQuery{
 		Args:        []map[string]interface{}{},
 		Queries:     []string{},
 		ArgsChan:    make(chan []map[string]interface{}),
@@ -70,7 +70,7 @@ func buildLambdaGraph(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func buildLambdaQuery(query *core.Query, functions []core.KarnaLambda) {
+func buildLambdaQuery(query *core.KarnaQuery, functions []core.KarnaLambda) {
 	for _, function := range functions {
 		var versions []map[string]interface{}
 		var layers []map[string]interface{}

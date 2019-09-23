@@ -7,27 +7,35 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-type KarnaLambdas struct {
+//KarnaLambdaModel => Karna API for Lambda.
+type KarnaLambdaModel struct {
 	Client *lambda.Client
 }
 
-type KarnaAPIGateway struct {
+//KarnaAPIGatewayModel => Karna API for APIGateway.
+type KarnaAPIGatewayModel struct {
 	Client *apigateway.Client
 }
 
-type KarnaEC2 struct {
+//KarnaEC2Model => Karna API for EC2.
+type KarnaEC2Model struct {
 	Client *ec2.Client
 }
 
-type KarnaS3 struct {
+//KarnaS3Model => Karna API for S3.
+type KarnaS3Model struct {
 	Client *s3.Client
 }
-type KarnaEC2Model struct {
+
+//KarnaEC2 => Karna model for EC2.
+type KarnaEC2 struct {
 	Instances      []ec2.Instance
 	SecurityGroups []ec2.SecurityGroup
 	Subnets        []ec2.Subnet
 	VPCS           []string
 }
+
+//KarnaLambda => Karna model for Lambda.
 type KarnaLambda struct {
 	FunctionConfiguration lambda.FunctionConfiguration
 	Layers                []lambda.Layer
@@ -57,6 +65,7 @@ type awsPolicy struct {
 	Statement []awsPolicyStatement
 }
 
+//KarnaAGWStage => Karna model for APIGateway Stage.
 type KarnaAGWStage struct {
 	Name         string
 	Stage        string
@@ -64,16 +73,20 @@ type KarnaAGWStage struct {
 	Distribution string
 }
 
+//KarnaAGWAPI => Karna model for APIGateway.
 type KarnaAGWAPI struct {
 	API       apigateway.RestApi
 	Resources []map[string]interface{}
 	Stages    []KarnaAGWStage
 }
 
+//KarnaDeploymentPrune => Karna model for Prune option in Karna config file.
 type KarnaDeploymentPrune struct {
 	Alias bool `json:"alias"`
 	Keep  int  `json:"keep"`
 }
+
+//KarnaDeployment => Karna model for Deployment key in Karna config file.
 type KarnaDeployment struct {
 	Src          string               `json:"src"`
 	Key          string               `json:"key"`
@@ -83,13 +96,16 @@ type KarnaDeployment struct {
 	Bucket       string               `json:"bucket"`
 	Prune        KarnaDeploymentPrune `json:"prune"`
 }
+
+//KarnaConfigFile => Karna model for Karna config file.
 type KarnaConfigFile struct {
 	Global      map[string]string `json:"global"`
 	Deployments []KarnaDeployment `json:"deployments"`
 	Path        string
 }
 
-type Query struct {
+//KarnaQuery => Karna model for Neo4J query.
+type KarnaQuery struct {
 	Queries     []string
 	QueriesChan chan []string
 	Args        []map[string]interface{}

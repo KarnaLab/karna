@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-func (agw *KarnaAPIGateway) init() {
+func (karnaAGW *KarnaAPIGatewayModel) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
@@ -18,13 +18,13 @@ func (agw *KarnaAPIGateway) init() {
 		os.Exit(2)
 	}
 
-	agw.Client = apigateway.New(cfg)
+	karnaAGW.Client = apigateway.New(cfg)
 }
 
 //BuildAGWTree => Will Build APIGateway tree for Karna model.
-func (agw *KarnaAPIGateway) BuildAGWTree() []KarnaAGWAPI {
+func (karnaAGW *KarnaAPIGatewayModel) BuildAGWTree() []KarnaAGWAPI {
 	var wg sync.WaitGroup
-	apis := agw.getAPIS()
+	apis := karnaAGW.getAPIS()
 
 	modelizedAPIS := make([]KarnaAGWAPI, len(apis))
 
@@ -34,14 +34,14 @@ func (agw *KarnaAPIGateway) BuildAGWTree() []KarnaAGWAPI {
 		modelizedAPIS[i] = KarnaAGWAPI{
 			API: api,
 		}
-		go agw.fetchDependencies(&modelizedAPIS[i], &wg)
+		go karnaAGW.fetchDependencies(&modelizedAPIS[i], &wg)
 	}
 
 	wg.Wait()
 
 	for i := range modelizedAPIS {
 		wg.Add(1)
-		go agw.fetchPathMappings(&modelizedAPIS[i], &modelizedAPIS, &wg)
+		go karnaAGW.fetchPathMappings(&modelizedAPIS[i], &modelizedAPIS, &wg)
 	}
 
 	wg.Wait()
@@ -49,12 +49,12 @@ func (agw *KarnaAPIGateway) BuildAGWTree() []KarnaAGWAPI {
 	return modelizedAPIS
 }
 
-func (agw *KarnaAPIGateway) fetchDependencies(api *KarnaAGWAPI, wg *sync.WaitGroup) {
+func (karnaAGW *KarnaAPIGatewayModel) fetchDependencies(api *KarnaAGWAPI, wg *sync.WaitGroup) {
 	resources := make(chan []map[string]interface{}, 1)
 	stages := make(chan []KarnaAGWStage, 1)
 
-	go agw.getResourcesForAPI(resources, *api.API.Id)
-	go agw.getStagesByAPI(stages, *api.API.Id)
+	go karnaAGW.getResourcesForAPI(resources, *api.API.Id)
+	go karnaAGW.getStagesByAPI(stages, *api.API.Id)
 
 	api.Resources = <-resources
 	api.Stages = <-stages
@@ -62,10 +62,10 @@ func (agw *KarnaAPIGateway) fetchDependencies(api *KarnaAGWAPI, wg *sync.WaitGro
 	wg.Done()
 }
 
-func (agw *KarnaAPIGateway) getAPIS() (apis []apigateway.RestApi) {
+func (karnaAGW *KarnaAPIGatewayModel) getAPIS() (apis []apigateway.RestApi) {
 	input := &apigateway.GetRestApisInput{}
 
-	req := agw.Client.GetRestApisRequest(input)
+	req := karnaAGW.Client.GetRestApisRequest(input)
 
 	results, err := req.Send(context.Background())
 
@@ -79,10 +79,10 @@ func (agw *KarnaAPIGateway) getAPIS() (apis []apigateway.RestApi) {
 	return
 }
 
-func (agw *KarnaAPIGateway) getStagesByAPI(stagesChan chan []KarnaAGWStage, id string) {
+func (karnaAGW *KarnaAPIGatewayModel) getStagesByAPI(stagesChan chan []KarnaAGWStage, id string) {
 	var stages []KarnaAGWStage
 	input := &apigateway.GetStagesInput{RestApiId: aws.String(id)}
-	req := agw.Client.GetStagesRequest(input)
+	req := karnaAGW.Client.GetStagesRequest(input)
 
 	results, err := req.Send(context.Background())
 
@@ -102,10 +102,10 @@ func (agw *KarnaAPIGateway) getStagesByAPI(stagesChan chan []KarnaAGWStage, id s
 	stagesChan <- stages
 }
 
-func (agw *KarnaAPIGateway) getResourcesForAPI(resourcesChan chan []map[string]interface{}, id string) {
+func (karnaAGW *KarnaAPIGatewayModel) getResourcesForAPI(resourcesChan chan []map[string]interface{}, id string) {
 	var resources []map[string]interface{}
 	input := &apigateway.GetResourcesInput{RestApiId: aws.String(id)}
-	req := agw.Client.GetResourcesRequest(input)
+	req := karnaAGW.Client.GetResourcesRequest(input)
 
 	results, err := req.Send(context.Background())
 
@@ -124,14 +124,14 @@ func (agw *KarnaAPIGateway) getResourcesForAPI(resourcesChan chan []map[string]i
 	resourcesChan <- resources
 }
 
-func (agw *KarnaAPIGateway) fetchPathMappings(api *KarnaAGWAPI, apis *[]KarnaAGWAPI, wg *sync.WaitGroup) {
+func (karnaAGW *KarnaAPIGatewayModel) fetchPathMappings(api *KarnaAGWAPI, apis *[]KarnaAGWAPI, wg *sync.WaitGroup) {
 	input := &apigateway.GetDomainNamesInput{}
-	req := agw.Client.GetDomainNamesRequest(input)
+	req := karnaAGW.Client.GetDomainNamesRequest(input)
 
 	results, _ := req.Send(context.Background())
 
 	for _, domainName := range results.Items {
-		mappings := agw.getBasePathMappings(domainName)
+		mappings := karnaAGW.getBasePathMappings(domainName)
 
 		for _, mapping := range mappings {
 			if *mapping.RestApiId == *api.API.Id {
@@ -144,9 +144,9 @@ func (agw *KarnaAPIGateway) fetchPathMappings(api *KarnaAGWAPI, apis *[]KarnaAGW
 	wg.Done()
 }
 
-func (agw *KarnaAPIGateway) getBasePathMappings(domainName apigateway.DomainName) (mappings []apigateway.BasePathMapping) {
+func (karnaAGW *KarnaAPIGatewayModel) getBasePathMappings(domainName apigateway.DomainName) (mappings []apigateway.BasePathMapping) {
 	input := &apigateway.GetBasePathMappingsInput{DomainName: aws.String(*domainName.DomainName)}
-	req := agw.Client.GetBasePathMappingsRequest(input)
+	req := karnaAGW.Client.GetBasePathMappingsRequest(input)
 
 	results, _ := req.Send(context.Background())
 	mappings = results.Items

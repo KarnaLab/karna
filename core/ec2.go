@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
 
-func (KarnaEC2 *KarnaEC2) init() {
+func (karnaEC2Model *KarnaEC2Model) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
@@ -16,16 +16,17 @@ func (KarnaEC2 *KarnaEC2) init() {
 		os.Exit(2)
 	}
 
-	KarnaEC2.Client = ec2.New(cfg)
+	karnaEC2Model.Client = ec2.New(cfg)
 }
 
-func (KarnaEC2 *KarnaEC2) BuildEC2Tree() KarnaEC2Model {
+//BuildEC2Tree => will build a tree with all EC2, activeSubnets,securityGroups && VPCS associated.
+func (karnaEC2Model *KarnaEC2Model) BuildEC2Tree() KarnaEC2 {
 
-	instances := KarnaEC2.getInstances()
-	activeSubnets, securityGroups := KarnaEC2.fetchDependencies()
-	vpcs := KarnaEC2.getVPCS(instances)
+	instances := karnaEC2Model.getInstances()
+	activeSubnets, securityGroups := karnaEC2Model.fetchDependencies()
+	vpcs := getVPCS(instances)
 
-	modelizedEC2 := KarnaEC2Model{
+	modelizedEC2 := KarnaEC2{
 		Instances:      instances,
 		SecurityGroups: securityGroups,
 		Subnets:        activeSubnets,
@@ -35,12 +36,12 @@ func (KarnaEC2 *KarnaEC2) BuildEC2Tree() KarnaEC2Model {
 	return modelizedEC2
 }
 
-func (KarnaEC2 *KarnaEC2) fetchDependencies() (activeSubnets []ec2.Subnet, securityGroups []ec2.SecurityGroup) {
+func (karnaEC2Model *KarnaEC2Model) fetchDependencies() (activeSubnets []ec2.Subnet, securityGroups []ec2.SecurityGroup) {
 	activeSubnetsChan := make(chan []ec2.Subnet, 1)
 	securityGroupsChan := make(chan []ec2.SecurityGroup, 1)
 
-	go KarnaEC2.getActiveSubnets(activeSubnetsChan)
-	go KarnaEC2.getSecurityGroups(securityGroupsChan)
+	go karnaEC2Model.getActiveSubnets(activeSubnetsChan)
+	go karnaEC2Model.getSecurityGroups(securityGroupsChan)
 
 	activeSubnets = <-activeSubnetsChan
 	securityGroups = <-securityGroupsChan
@@ -48,10 +49,10 @@ func (KarnaEC2 *KarnaEC2) fetchDependencies() (activeSubnets []ec2.Subnet, secur
 	return
 }
 
-func (KarnaEC2 *KarnaEC2) getInstances() (instances []ec2.Instance) {
+func (karnaEC2Model *KarnaEC2Model) getInstances() (instances []ec2.Instance) {
 	input := &ec2.DescribeInstancesInput{}
 
-	req := KarnaEC2.Client.DescribeInstancesRequest(input)
+	req := karnaEC2Model.Client.DescribeInstancesRequest(input)
 
 	results, err := req.Send(context.Background())
 
@@ -69,10 +70,11 @@ func (KarnaEC2 *KarnaEC2) getInstances() (instances []ec2.Instance) {
 	return
 }
 
-func (KarnaEC2 *KarnaEC2) getActiveSubnets(activeSubnetsChan chan []ec2.Subnet) {
+func (karnaEC2Model *KarnaEC2Model) getActiveSubnets(activeSubnetsChan chan []ec2.Subnet) {
 	var activeSubnets []ec2.Subnet
+
 	input := &ec2.DescribeSubnetsInput{}
-	req := KarnaEC2.Client.DescribeSubnetsRequest(input)
+	req := karnaEC2Model.Client.DescribeSubnetsRequest(input)
 	results, _ := req.Send(context.Background())
 
 	for _, subnet := range results.Subnets {
@@ -81,10 +83,11 @@ func (KarnaEC2 *KarnaEC2) getActiveSubnets(activeSubnetsChan chan []ec2.Subnet) 
 	activeSubnetsChan <- activeSubnets
 }
 
-func (KarnaEC2 *KarnaEC2) getSecurityGroups(securityGroupsChan chan []ec2.SecurityGroup) {
+func (karnaEC2Model *KarnaEC2Model) getSecurityGroups(securityGroupsChan chan []ec2.SecurityGroup) {
 	var securityGroups []ec2.SecurityGroup
+
 	input := &ec2.DescribeSecurityGroupsInput{}
-	req := KarnaEC2.Client.DescribeSecurityGroupsRequest(input)
+	req := karnaEC2Model.Client.DescribeSecurityGroupsRequest(input)
 	results, _ := req.Send(context.Background())
 
 	for _, securityGroup := range results.SecurityGroups {
@@ -94,7 +97,7 @@ func (KarnaEC2 *KarnaEC2) getSecurityGroups(securityGroupsChan chan []ec2.Securi
 	securityGroupsChan <- securityGroups
 }
 
-func (KarnaEC2 *KarnaEC2) getVPCS(instances []ec2.Instance) (VPCS []string) {
+func getVPCS(instances []ec2.Instance) (VPCS []string) {
 	var vpcs []string
 
 	for _, instance := range instances {
