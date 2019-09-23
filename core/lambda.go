@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"karna/core"
 	"os"
 	"sort"
 	"strconv"
@@ -48,7 +47,7 @@ func (lambdaModel *KarnaLambdas) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		LogErrorMessage("unable to load SDK config, " + err.Error())
 		os.Exit(2)
 	}
 
@@ -93,7 +92,7 @@ func (lambdaModel *KarnaLambdas) getVersions(versions chan []lambda.FunctionConf
 	response, err := request.Send(context.Background())
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		LogErrorMessage(err.Error())
 		os.Exit(2)
 	}
 
@@ -131,7 +130,6 @@ func (lambdaModel *KarnaLambdas) getPolicy(policies chan map[string][]string, fu
 }
 
 func (lambdaModel *KarnaLambdas) UpdateFunctionCode(deployment *KarnaDeployment, archivePath string) (err error) {
-
 	input := &lambda.UpdateFunctionCodeInput{}
 
 	if deployment.Bucket != "" {
@@ -159,7 +157,6 @@ func (lambdaModel *KarnaLambdas) UpdateFunctionCode(deployment *KarnaDeployment,
 }
 
 func (lambdaModel *KarnaLambdas) PublishFunction(deployment *KarnaDeployment) (err error) {
-
 	input := &lambda.PublishVersionInput{
 		FunctionName: aws.String(deployment.FunctionName),
 		Description:  aws.String("gloup"),
@@ -218,8 +215,10 @@ func (lambdaModel *KarnaLambdas) SyncAlias(deployment *KarnaDeployment, alias st
 	aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 
 	if a := findAlias(aliases, alias); a == nil {
+		LogSuccessMessage("Creation of alias: " + alias)
 		lambdaModel.createAlias(deployment, alias)
 	} else {
+		LogSuccessMessage("Updating alias: " + alias)
 		lambdaModel.updateAlias(deployment, alias)
 	}
 
@@ -229,9 +228,11 @@ func (lambdaModel *KarnaLambdas) SyncAlias(deployment *KarnaDeployment, alias st
 func (lambdaModel *KarnaLambdas) createAlias(deployment *KarnaDeployment, alias string) (err error) {
 	var version string
 
-	if deployment.Aliases[alias] == "fixed@update" || len(deployment.Aliases[alias]) == 0 {
-		// TODO WHEN fixed@update need to target last version not latest!!
+	if len(deployment.Aliases[alias]) == 0 {
 		version = "$LATEST"
+	} else if deployment.Aliases[alias] == "fixed@update" {
+		versions, _ := lambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
 	}
@@ -279,6 +280,8 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 
 		for _, a := range aliases {
 			if _, ok := deployment.Aliases[*a.Name]; !ok {
+				LogSuccessMessage("Prune alias: " + *a.Name)
+
 				input := &lambda.DeleteAliasInput{
 					Name:         aws.String(*a.Name),
 					FunctionName: aws.String(deployment.FunctionName),
@@ -328,6 +331,9 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 			}
 		}
 
+		pruneVersionsCount := strconv.Itoa(len(versionsToPrune))
+
+		LogSuccessMessage("Prune: " + pruneVersionsCount + " version(s)")
 		// TODO: Make goroutines, + do not forget no-paginate in getAll lambda method
 		for _, version := range versionsToPrune {
 			versionToString := strconv.Itoa(version)
@@ -340,7 +346,6 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 			req := lambdaModel.Client.DeleteFunctionRequest(input)
 
 			_, err = req.Send(context.Background())
-
 		}
 	}
 

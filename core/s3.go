@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"io/ioutil"
-	"karna/core"
 	"os"
 	"strings"
 
@@ -16,7 +15,7 @@ func (karnaS3 *KarnaS3) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		LogErrorMessage("unable to load SDK config, " + err.Error())
 		os.Exit(2)
 	}
 

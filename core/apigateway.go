@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"karna/core"
 	"os"
 	"sync"
 
@@ -15,7 +14,7 @@ func (agw *KarnaAPIGateway) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		LogErrorMessage("unable to load SDK config, " + err.Error())
 		os.Exit(2)
 	}
 
@@ -71,7 +70,7 @@ func (agw *KarnaAPIGateway) getAPIS() (apis []apigateway.RestApi) {
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		LogErrorMessage(err.Error())
 		os.Exit(2)
 	}
 
@@ -88,7 +87,7 @@ func (agw *KarnaAPIGateway) getStagesByAPI(stagesChan chan []KarnaAGWStage, id s
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		LogErrorMessage(err.Error())
 		os.Exit(2)
 	}
 
@@ -111,7 +110,7 @@ func (agw *KarnaAPIGateway) getResourcesForAPI(resourcesChan chan []map[string]i
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		LogErrorMessage(err.Error())
 		os.Exit(2)
 	}
 

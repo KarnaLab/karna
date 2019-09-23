@@ -4,10 +4,11 @@
     {
       "src": "services",
       "file": "lambda.zip",
-      "functionName": "<functionName>",
+      "functionName": "avgTest",
       "aliases": {
-        "<some-alias>": "2",
-        "<other-alias>": "fixed@update"
+        "prod": "8",
+        "dev": "fixed@update",
+        "gloup": "9"
       },
       "prune": {
         "keep": 2,

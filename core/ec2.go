@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"karna/core"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -13,7 +12,7 @@ func (KarnaEC2 *KarnaEC2) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		LogErrorMessage("unable to load SDK config, " + err.Error())
 		os.Exit(2)
 	}
 
@@ -57,7 +56,7 @@ func (KarnaEC2 *KarnaEC2) getInstances() (instances []ec2.Instance) {
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		LogErrorMessage(err.Error())
 		os.Exit(2)
 	}
 
