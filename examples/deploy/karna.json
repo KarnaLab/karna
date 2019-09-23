@@ -8,7 +8,7 @@
       "aliases": {
         "prod": "8",
         "dev": "fixed@update",
-        "gloup": "9"
+        "test": "9"
       },
       "prune": {
         "keep": 2,

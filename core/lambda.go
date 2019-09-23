@@ -274,7 +274,6 @@ func (lambdaModel *KarnaLambdas) updateAlias(deployment *KarnaDeployment, alias 
 }
 
 func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) {
-
 	if deployment.Prune.Alias {
 		aliases, _ := lambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 

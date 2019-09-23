@@ -19,9 +19,10 @@ func Run(target *string, alias *string) (timeElapsed string) {
 	core.LogSuccessMessage("Done")
 
 	var source = configFile.Path + "/" + targetDeployment.Src
-	var output = configFile.Path + "/.karna/" + targetDeployment.File
+	var output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias + "/" + targetDeployment.File
 
 	core.LogSuccessMessage("Building archive...")
+
 	zipArchive(source, output)
 
 	if targetDeployment.Bucket != "" {
