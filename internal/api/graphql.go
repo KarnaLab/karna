@@ -30,8 +30,14 @@ var queryType = graphql.NewObject(
 				Resolve: lambdaResolver,
 			},
 			"ec2": &graphql.Field{
+				//TODO: Map EC2 properties.
 				Type:    graphql.String,
 				Resolve: ec2Resolver,
+			},
+			"apigateway": &graphql.Field{
+				//TODO: Map AGW properties.
+				Type:    graphql.NewList(KarnaGraphQLAGWType),
+				Resolve: agwResolver,
 			},
 		},
 	})

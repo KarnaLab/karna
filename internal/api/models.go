@@ -95,3 +95,79 @@ var KarnaGraphQLLambdaType = graphql.NewObject(
 		},
 	},
 )
+
+var KarnaGraphQLAGWType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "APIGateway",
+		Fields: graphql.Fields{
+			"API": &graphql.Field{
+				Type: KarnaGraphQLAGWRestAPIType,
+			},
+			"Resources": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Stages": &graphql.Field{
+				Type: graphql.NewList(KarnaGraphQLAGWStageType),
+			},
+		},
+	},
+)
+
+/*
+    ApiKeySource    ApiKeySourceType    `locationName:"apiKeySource" type:"string" enum:"true"`
+    BinaryMediaTypes    []string    `locationName:"binaryMediaTypes" type:"list"`
+    CreatedDate    *time.Time    `locationName:"createdDate" type:"timestamp"`
+    Description    *string    `locationName:"description" type:"string"`
+    EndpointConfiguration    *EndpointConfiguration    `locationName:"endpointConfiguration" type:"structure"`
+    Id    *string    `locationName:"id" type:"string"`
+    MinimumCompressionSize    *int64    `locationName:"minimumCompressionSize" type:"integer"`
+    Name    *string    `locationName:"name" type:"string"`
+    Policy    *string    `locationName:"policy" type:"string"`
+    Tags    map[string]string    `locationName:"tags" type:"map"`
+    Version    *string    `locationName:"version" type:"string"`
+		Warnings    []string    `locationName:"warnings" type:"list"`
+*/
+var KarnaGraphQLAGWRestAPIType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "RestAPI",
+		Fields: graphql.Fields{
+			"ApiKeySource": &graphql.Field{
+				Type: graphql.String,
+			},
+			"BinaryMediaTypes": &graphql.Field{
+				Type: graphql.String,
+			},
+			"CreatedDate": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Description": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Id": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+var KarnaGraphQLAGWStageType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Layer",
+		Fields: graphql.Fields{
+			"Name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Stage": &graphql.Field{
+				Type: graphql.String,
+			},
+			"FunctionName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"UUID": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Distribution": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
