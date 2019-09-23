@@ -41,5 +41,8 @@ func BuildGraphQLAPI(w http.ResponseWriter, r *http.Request) {
 	result := executeQuery(r.URL.Query().Get("query"), schema)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(result)
+
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		panic(err)
+	}
 }
