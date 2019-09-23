@@ -11,9 +11,9 @@ import (
 func initRouter() *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/lambdas", LambdaAllHandler)
-	router.HandleFunc("/apigateway", AGWAllHandler)
-	router.HandleFunc("/ec2", EC2AllHandler)
+	router.Use(JsonMiddleware)
+
+	router.HandleFunc("/graphql", BuildGraphQLAPI)
 
 	http.Handle("/", router)
 
@@ -32,7 +32,6 @@ func LambdaAllHandler(w http.ResponseWriter, r *http.Request) {
 
 func AGWAllHandler(w http.ResponseWriter, r *http.Request) {
 	response := core.AGW.BuildAGWTree()
-
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

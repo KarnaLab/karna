@@ -66,7 +66,7 @@ var cmdAPIStart = &cobra.Command{
 	Use:   "start",
 	Short: "Use Karna API to build a GUI.",
 	Long: `Karna API will start a WebServer which exposes a collection of
-	endpoints to build, interact, vizualize your Lambda architecture.`,
+	endpoints to build, interact and vizualize your Lambda architecture.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		api.Start()
 	},

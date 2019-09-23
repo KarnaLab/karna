@@ -324,6 +324,7 @@ func (lambdaModel *KarnaLambdas) Prune(deployment *KarnaDeployment) (err error) 
 			}
 		}
 
+		// TODO: Make goroutines, + do not forget no-paginate in getAll lambda method
 		for _, version := range versionsToPrune {
 			versionToString := strconv.Itoa(version)
 
