@@ -3,10 +3,12 @@ package viz
 import (
 	"karna/core"
 	"sync"
+	"time"
 )
 
-func Run() {
+func Run() (timeElapsed string) {
 	var wg sync.WaitGroup
+	startTime := time.Now()
 
 	wg.Add(3)
 
@@ -15,8 +17,15 @@ func Run() {
 	go buildEC2Tree(&wg)
 
 	wg.Wait()
+
+	timeElapsed = time.Since(startTime).String()
+	return
 }
 
-func Cleanup() {
+func Cleanup() (timeElapsed string) {
+	startTime := time.Now()
 	core.CleanUp()
+
+	timeElapsed = time.Since(startTime).String()
+	return
 }

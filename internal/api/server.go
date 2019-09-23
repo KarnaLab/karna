@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"flag"
-	"log"
+	"karna/core"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,9 +32,12 @@ func startServer(router *mux.Router) {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			log.Println(err)
+			core.LogErrorMessage(err.Error())
 		}
 	}()
+
+	core.LogSuccessMessage("Completed")
+	core.LogSuccessMessage("API is listening @ " + server.Addr)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -46,6 +49,7 @@ func startServer(router *mux.Router) {
 
 	server.Shutdown(ctx)
 
-	log.Println("shutting down")
+	core.LogSuccessMessage("API is shutting down")
+
 	os.Exit(0)
 }

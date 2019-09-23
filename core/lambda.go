@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"karna/core"
+	"os"
 	"sort"
 	"strconv"
 	"sync"
@@ -46,7 +48,8 @@ func (lambdaModel *KarnaLambdas) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		panic("unable to load SDK config, " + err.Error())
+		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		os.Exit(2)
 	}
 
 	lambdaModel.Client = lambda.New(cfg)
@@ -90,7 +93,8 @@ func (lambdaModel *KarnaLambdas) getVersions(versions chan []lambda.FunctionConf
 	response, err := request.Send(context.Background())
 
 	if err != nil {
-		panic(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	versions <- response.Versions

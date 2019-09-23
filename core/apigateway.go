@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+	"karna/core"
+	"os"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -13,7 +15,8 @@ func (agw *KarnaAPIGateway) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		panic("unable to load SDK config, " + err.Error())
+		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		os.Exit(2)
 	}
 
 	agw.Client = apigateway.New(cfg)
@@ -68,7 +71,8 @@ func (agw *KarnaAPIGateway) getAPIS() (apis []apigateway.RestApi) {
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		panic(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	apis = results.Items
@@ -84,7 +88,8 @@ func (agw *KarnaAPIGateway) getStagesByAPI(stagesChan chan []KarnaAGWStage, id s
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		panic(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	for _, stage := range results.Item {
@@ -106,7 +111,8 @@ func (agw *KarnaAPIGateway) getResourcesForAPI(resourcesChan chan []map[string]i
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		panic(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	for _, resource := range results.Items {

@@ -1,0 +1,18 @@
+{
+  "global": {},
+  "deployments": [
+    {
+      "src": "services",
+      "file": "lambda.zip",
+      "functionName": "<functionName>",
+      "aliases": {
+        "<some-alias>": "2",
+        "<other-alias>": "fixed@update"
+      },
+      "prune": {
+        "keep": 2,
+        "alias": true
+      }
+    }
+  ]
+}

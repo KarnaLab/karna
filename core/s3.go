@@ -3,6 +3,8 @@ package core
 import (
 	"context"
 	"io/ioutil"
+	"karna/core"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -14,7 +16,8 @@ func (karnaS3 *KarnaS3) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		panic("unable to load SDK config, " + err.Error())
+		core.LogErrorMessage("unable to load SDK config, " + err.Error())
+		os.Exit(2)
 	}
 
 	karnaS3.Client = s3.New(cfg)

@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"karna/core"
 	"os"
 
 	"github.com/mholt/archiver"
@@ -15,6 +16,7 @@ func zipArchive(source, target string) {
 	err := archiver.Archive([]string{source}, target)
 
 	if err != nil {
-		panic(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 }

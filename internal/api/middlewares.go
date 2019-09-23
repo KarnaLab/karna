@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	"karna/core"
 	"net/http"
 	"time"
 )
@@ -19,11 +19,8 @@ func loggerMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 
-		log.Printf(
-			"%s\t%s\t%s",
-			r.Method,
-			r.RequestURI,
-			time.Since(start),
-		)
+		log := r.Method + " " + r.RequestURI + " " + time.Since(start).String()
+
+		core.LogSuccessMessage(log)
 	})
 }

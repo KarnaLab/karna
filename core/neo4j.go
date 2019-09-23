@@ -1,6 +1,8 @@
 package core
 
 import (
+	"os"
+
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
@@ -21,7 +23,8 @@ func createConnection() bolt.Conn {
 
 func handleError(err error) {
 	if err != nil {
-		panic(err)
+		LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 }
 
@@ -33,13 +36,15 @@ func Bulk(queries []string, args []map[string]interface{}) {
 	pipeline, err := conn.PreparePipeline(queries...)
 
 	if err != nil {
-		panic(err.Error())
+		LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	_, err = pipeline.ExecPipeline(args...)
 
 	if err != nil {
-		panic(err.Error())
+		LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 }
 
@@ -51,12 +56,14 @@ func CleanUp() {
 	stmt, err := conn.PrepareNeo("MATCH (n) DETACH DELETE n")
 
 	if err != nil {
-		panic(err.Error())
+		LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	_, err = stmt.QueryNeo(nil)
 
 	if err != nil {
-		panic(err.Error())
+		LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 }

@@ -1,11 +1,13 @@
 package deploy
 
 import (
-	"fmt"
 	"karna/core"
+	"os"
+	"time"
 )
 
-func Run(target *string, alias *string) {
+func Run(target *string, alias *string) (timeElapsed string) {
+	startTime := time.Now()
 
 	configFile := getConfigFile()
 	targetDeployment := getTargetDeployment(configFile, target)
@@ -21,33 +23,41 @@ func Run(target *string, alias *string) {
 		err := core.S3.Upload(targetDeployment, output)
 
 		if err != nil {
-			panic(err.Error())
+			core.LogErrorMessage(err.Error())
+			os.Exit(2)
 		}
 	}
 
 	err := core.Lambda.UpdateFunctionCode(targetDeployment, output)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	err = core.Lambda.PublishFunction(targetDeployment)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	err = core.Lambda.SyncAlias(targetDeployment, *alias)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		core.LogErrorMessage(err.Error())
+		os.Exit(2)
 	}
 
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
 		err := core.Lambda.Prune(targetDeployment)
 
 		if err != nil {
-			fmt.Println(err.Error())
+			core.LogErrorMessage(err.Error())
+			os.Exit(2)
 		}
 	}
+
+	timeElapsed = time.Since(startTime).String()
+	return
 }
