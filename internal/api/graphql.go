@@ -17,6 +17,7 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	if len(result.Errors) > 0 {
 		fmt.Printf("wrong result, unexpected errors: %v", result.Errors)
 	}
+
 	return result
 }
 
@@ -37,7 +38,7 @@ var schema, _ = graphql.NewSchema(
 	},
 )
 
-func BuildGraphQLAPI(w http.ResponseWriter, r *http.Request) {
+func buildGraphQLAPI(w http.ResponseWriter, r *http.Request) {
 	result := executeQuery(r.URL.Query().Get("query"), schema)
 
 	w.WriteHeader(http.StatusOK)

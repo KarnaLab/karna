@@ -9,9 +9,10 @@ import (
 func initRouter() *mux.Router {
 	router := mux.NewRouter()
 
-	router.Use(JsonMiddleware)
+	router.Use(jsonMiddleware)
+	router.Use(loggerMiddleware)
 
-	router.HandleFunc("/graphql", BuildGraphQLAPI)
+	router.HandleFunc("/graphql", buildGraphQLAPI)
 
 	http.Handle("/", router)
 

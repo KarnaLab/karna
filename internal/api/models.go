@@ -72,6 +72,7 @@ var KarnaGraphQLPolicyType = graphql.NewObject(
 		},
 	},
 )
+
 var KarnaGraphQLLambdaType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Lambda",
