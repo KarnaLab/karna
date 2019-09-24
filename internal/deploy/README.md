@@ -10,10 +10,35 @@ via the prune option.
 
 ## Options
 
+### Required
+
+`"src": <string>`
+
+Path to the folder which contains the function.
+
+`"file": <string>`
+
+The target filename output (must be .zip or .tar)
+
+`"functionName": <string>`
+
+The function name
+
+`"aliases": <map[string]string>`
+
+A map of alias name with their matching versions.
+
+### Optional
+
 `{ ..., "prune": { "keep": <int>, "alias": <bool> } }`
 
 If alias is specified, it will destroy ALL aliases which dit not match with aliases in karna.json.
+
 If keep is specified, it will destroy all versions which dit not match to the pattern: <each-alias-version> + range to <each-alias-version> - range
+
+`"bucket": <string>`
+
+If bucket is specidifed, it will upload the function code to S3.
 
 ## Commands
 
