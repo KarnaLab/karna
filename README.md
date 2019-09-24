@@ -33,4 +33,5 @@ This package allows you to mount a GraphQL API that exposes the following AWS re
 
 ## Examples
 
+All commands are avaiblable via: karna help or karna <subcommand> help
 An example karna.json configuration file is presented in the examples / deploy folder
