@@ -29,7 +29,7 @@ This package allows you to pack, deploy, tag (alias), and clean the selected lam
 
 This package allows you to mount a GraphQL API that exposes the following AWS resources in JSON format: Lambda, APIGateway, EC2.
 
-- start api
+- api start
 
 ## Examples
 

@@ -104,7 +104,7 @@ var KarnaGraphQLAGWType = graphql.NewObject(
 				Type: KarnaGraphQLAGWRestAPIType,
 			},
 			"Resources": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.NewList(KarnaGraphQLAGWResourceType),
 			},
 			"Stages": &graphql.Field{
 				Type: graphql.NewList(KarnaGraphQLAGWStageType),
@@ -113,20 +113,6 @@ var KarnaGraphQLAGWType = graphql.NewObject(
 	},
 )
 
-/*
-    ApiKeySource    ApiKeySourceType    `locationName:"apiKeySource" type:"string" enum:"true"`
-    BinaryMediaTypes    []string    `locationName:"binaryMediaTypes" type:"list"`
-    CreatedDate    *time.Time    `locationName:"createdDate" type:"timestamp"`
-    Description    *string    `locationName:"description" type:"string"`
-    EndpointConfiguration    *EndpointConfiguration    `locationName:"endpointConfiguration" type:"structure"`
-    Id    *string    `locationName:"id" type:"string"`
-    MinimumCompressionSize    *int64    `locationName:"minimumCompressionSize" type:"integer"`
-    Name    *string    `locationName:"name" type:"string"`
-    Policy    *string    `locationName:"policy" type:"string"`
-    Tags    map[string]string    `locationName:"tags" type:"map"`
-    Version    *string    `locationName:"version" type:"string"`
-		Warnings    []string    `locationName:"warnings" type:"list"`
-*/
 var KarnaGraphQLAGWRestAPIType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "RestAPI",
@@ -146,12 +132,25 @@ var KarnaGraphQLAGWRestAPIType = graphql.NewObject(
 			"Id": &graphql.Field{
 				Type: graphql.String,
 			},
+			"MinimumCompressionSize": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"Name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Policy": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Version": &graphql.Field{
+				Type: graphql.String,
+			},
 		},
 	},
 )
+
 var KarnaGraphQLAGWStageType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Layer",
+		Name: "Stage",
 		Fields: graphql.Fields{
 			"Name": &graphql.Field{
 				Type: graphql.String,
@@ -166,6 +165,175 @@ var KarnaGraphQLAGWStageType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"Distribution": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var KarnaGraphQLAGWResourceType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Resource",
+		Fields: graphql.Fields{
+			"Id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Path": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var KarnaGraphQLEC2Type = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "EC2",
+		Fields: graphql.Fields{
+			"Instances": &graphql.Field{
+				Type: graphql.NewList(KarnaGraphQLInstanceType),
+			},
+			"SecurityGroups": &graphql.Field{
+				Type: graphql.NewList(KarnaGraphQLSecurityGroupType),
+			},
+			"Subnets": &graphql.Field{
+				Type: graphql.NewList(KarnaGraphQLSubnetType),
+			},
+			"VPCS": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+		},
+	},
+)
+
+var KarnaGraphQLSubnetType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Subnet",
+		Fields: graphql.Fields{
+			"AssignIpv6AddressOnCreation": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"AvailabilityZone": &graphql.Field{
+				Type: graphql.String,
+			},
+			"AvailabilityZoneId": &graphql.Field{
+				Type: graphql.String,
+			},
+			"AvailableIpAddressCount": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"CidrBlock": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DefaultForAz": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"MapPublicIpOnLaunch": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"OwnerId": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"State": &graphql.Field{
+				Type: graphql.String,
+			},
+			"SubnetArn": &graphql.Field{
+				Type: graphql.String,
+			},
+			"SubnetId": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Tags": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"VpcId": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var KarnaGraphQLSecurityGroupType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "SecurityGroup",
+		Fields: graphql.Fields{
+			"Description": &graphql.Field{
+				Type: graphql.String,
+			},
+			"GroupId": &graphql.Field{
+				Type: graphql.String,
+			},
+			"GroupName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"IpPermissions": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"IpPermissionsEgress": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"OwnerId": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Tags": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"VpcId": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var KarnaGraphQLInstanceType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Instance",
+		Fields: graphql.Fields{
+			"AmiLaunchIndex": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"BlockDeviceMappings": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"ImageId": &graphql.Field{
+				Type: graphql.String,
+			},
+			"InstanceId": &graphql.Field{
+				Type: graphql.String,
+			},
+			"KeyName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LaunchTime": {
+				Type: graphql.String,
+			},
+			"NetworkInterfaces": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"PrivateDnsName": {
+				Type: graphql.String,
+			},
+			"PrivateIpAddress": {
+				Type: graphql.String,
+			},
+			"PublicDnsName": {
+				Type: graphql.String,
+			},
+			"PublicIpAddress": {
+				Type: graphql.String,
+			},
+			"SecurityGroups": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"SourceDestCheck": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"SubnetId": {
+				Type: graphql.String,
+			},
+			"Tags": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"VpcId": &graphql.Field{
 				Type: graphql.String,
 			},
 		},
