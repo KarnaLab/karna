@@ -19,5 +19,5 @@ Each models are available in `ìnternal/api/models.go`.
 - Get all lambdas and their Layers:
   `http://localhost:8000/graphql?query={lambda{Layers{Arn} }}`
 
-- Get all apigateway rest APIS, their names and their associated names:
+- Get all apigateway rest APIS, their names and their associated stages:
   `http://localhost:8000/graphql?query={apigateway{ API{Name}, Stages{Name,Stage} }}`
