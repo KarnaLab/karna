@@ -42,6 +42,8 @@ If bucket is specified, it will upload the function code to S3.
 
 ## Commands
 
+`karna deploy -a <alias> -t <functionName>`
+
 Karna deploy requires two flags:
 
 - --alias or -a => Alias name

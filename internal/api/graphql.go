@@ -25,7 +25,7 @@ var queryType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"lambdas": &graphql.Field{
+			"lambda": &graphql.Field{
 				Type:    graphql.NewList(KarnaGraphQLLambdaType),
 				Resolve: lambdaResolver,
 			},
