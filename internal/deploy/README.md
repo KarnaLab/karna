@@ -11,6 +11,7 @@ via the prune option.
 ## Options
 
 `{ ..., "prune": { "keep": <int>, "alias": <bool> } }`
+
 If alias is specified, it will destroy ALL aliases which dit not match with aliases in karna.json.
 If keep is specified, it will destroy all versions which dit not match to the pattern: <each-alias-version> + range to <each-alias-version> - range
 
