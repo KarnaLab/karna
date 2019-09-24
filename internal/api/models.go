@@ -17,7 +17,7 @@ var KarnaGraphQLLayersType = graphql.NewObject(
 )
 var KarnaGraphQLFunctionConfigurationType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Layer",
+		Name: "FunctionConfiguration",
 		Fields: graphql.Fields{
 			"CodeSha256": &graphql.Field{
 				Type: graphql.String,

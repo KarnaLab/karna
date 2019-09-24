@@ -14,7 +14,7 @@ Karna is composed of three packages. Each package has a README file that describ
 
 ### Viz
 
-This package allows to visualize in Neo4J, the architecture of your lambdas. Karna Viz exposes two commands:
+This package allows you to visualize in Neo4J, the architecture of your lambdas. Karna Viz exposes two commands:
 
 - show: Build the tree
 - cleanup: Destroy the tree

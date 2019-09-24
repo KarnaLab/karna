@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+	"karna/core"
 	"net/http"
 
 	"github.com/graphql-go/graphql"
@@ -15,7 +15,7 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	})
 
 	if len(result.Errors) > 0 {
-		fmt.Printf("wrong result, unexpected errors: %v", result.Errors)
+		core.LogErrorMessage("An error occured.")
 	}
 
 	return result
@@ -30,7 +30,6 @@ var queryType = graphql.NewObject(
 				Resolve: lambdaResolver,
 			},
 			"ec2": &graphql.Field{
-				//TODO: Map EC2 properties.
 				Type:    KarnaGraphQLEC2Type,
 				Resolve: ec2Resolver,
 			},
@@ -49,8 +48,6 @@ var schema, _ = graphql.NewSchema(
 
 func buildGraphQLAPI(w http.ResponseWriter, r *http.Request) {
 	result := executeQuery(r.URL.Query().Get("query"), schema)
-
-	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		panic(err)
