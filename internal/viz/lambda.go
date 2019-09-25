@@ -66,7 +66,7 @@ func buildLambdaGraph(wg *sync.WaitGroup) {
 	<-query.QueriesChan
 	<-query.ArgsChan
 
-	core.Bulk(query.Queries, query.Args)
+	neo4j.Bulk(query.Queries, query.Args)
 	wg.Done()
 }
 

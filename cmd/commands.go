@@ -45,7 +45,11 @@ var cmdVizShow = &cobra.Command{
 		core.LogSuccessMessage("Create Neo4J trees in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		elapsed := viz.Run()
+		port, _ := cmd.Flags().GetString("port")
+		credentials, _ := cmd.Flags().GetString("credentials")
+		host, _ := cmd.Flags().GetString("host")
+
+		elapsed := viz.Run(&port, &credentials, &host)
 		core.LogSuccessMessage("Completed in " + elapsed)
 	},
 }
@@ -85,17 +89,24 @@ var cmdAPIStart = &cobra.Command{
 }
 
 func init() {
-	var Target string
-	var Alias string
+	var target string
+	var alias string
+	var port string
+	var credentials string
+	var host string
 
 	cmdAPI.AddCommand(cmdAPIStart)
 	cmdViz.AddCommand(cmdVizShow, cmdVizCleanup)
 
-	cmdDeploy.Flags().StringVarP(&Target, "target", "t", "", "Function to deploy (JSON key into your config file)")
-	cmdDeploy.Flags().StringVarP(&Alias, "alias", "a", "", "Alias to publish")
+	cmdDeploy.Flags().StringVarP(&target, "target", "t", "", "Function to deploy (JSON key into your config file)")
+	cmdDeploy.Flags().StringVarP(&alias, "alias", "a", "", "Alias to publish")
 
 	cmdDeploy.MarkFlagRequired("target")
 	cmdDeploy.MarkFlagRequired("alias")
+
+	cmdVizShow.Flags().StringVarP(&port, "port", "p", "", "Database port")
+	cmdVizShow.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
+	cmdVizShow.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
 
 	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz)
 }

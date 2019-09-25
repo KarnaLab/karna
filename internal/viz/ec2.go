@@ -1,7 +1,6 @@
 package viz
 
 import (
-	"awsgraphviz/utils"
 	"karna/core"
 	"sync"
 )
@@ -66,6 +65,6 @@ func buildEC2Tree(wg *sync.WaitGroup) {
 	<-query.QueriesChan
 	<-query.ArgsChan
 
-	utils.Bulk(query.Queries, query.Args)
+	neo4j.Bulk(query.Queries, query.Args)
 	wg.Done()
 }

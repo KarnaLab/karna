@@ -111,3 +111,16 @@ type KarnaQuery struct {
 	Args        []map[string]interface{}
 	ArgsChan    chan []map[string]interface{}
 }
+
+//KarnaNeo4JConfiguration => Karna model for Neo4J configuration.
+type KarnaNeo4JConfiguration struct {
+	Username string
+	Password string
+	Port     string
+	Host     string
+}
+
+//KarnaNeo4J => Karna model for Neo4J.
+type KarnaNeo4J struct {
+	Configuration KarnaNeo4JConfiguration
+}

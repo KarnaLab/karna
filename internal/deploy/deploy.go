@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Run(target *string, alias *string) (timeElapsed string) {
+func Run(target, alias *string) (timeElapsed string) {
 	startTime := time.Now()
 
 	configFile := getConfigFile()
