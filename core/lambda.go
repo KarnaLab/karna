@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"sort"
 	"strconv"
 	"sync"
@@ -48,7 +47,7 @@ func (karnaLambdaModel *KarnaLambdaModel) init() {
 
 	if err != nil {
 		LogErrorMessage("unable to load SDK config, " + err.Error())
-		os.Exit(2)
+
 	}
 
 	karnaLambdaModel.Client = lambda.New(cfg)
@@ -93,7 +92,7 @@ func (karnaLambdaModel *KarnaLambdaModel) getVersions(versions chan []lambda.Fun
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	versions <- response.Versions
@@ -367,7 +366,7 @@ func (karnaLambdaModel *KarnaLambdaModel) pruneVersion(wg *sync.WaitGroup, versi
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	wg.Done()

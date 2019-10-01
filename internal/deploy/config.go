@@ -17,14 +17,12 @@ func getConfigFile() (configFile *core.KarnaConfigFile) {
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
 	}
 
 	data, err := ioutil.ReadFile(dir + "/" + fileName)
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
 	}
 
 	err = json.Unmarshal(data, &configFile)
@@ -33,7 +31,6 @@ func getConfigFile() (configFile *core.KarnaConfigFile) {
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
 	}
 
 	return
@@ -53,7 +50,7 @@ func checkRequirements(deployment *core.KarnaDeployment, alias string) {
 
 	if deployment.Aliases[alias] == "" {
 		core.LogErrorMessage("Alias do not match with the config file.")
-		os.Exit(2)
+
 	}
 
 	for _, requirement := range requirements {
@@ -64,12 +61,11 @@ func checkRequirements(deployment *core.KarnaDeployment, alias string) {
 		case reflect.TypeOf(""):
 			if a.Len() == 0 {
 				core.LogErrorMessage("is missing:" + requirement)
-				os.Exit(2)
 			}
 		case reflect.TypeOf(map[string]string{}):
 			if a.IsNil() {
 				core.LogErrorMessage("is missing:" + requirement)
-				os.Exit(2)
+
 			}
 		}
 	}

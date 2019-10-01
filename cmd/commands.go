@@ -3,6 +3,7 @@ package cmd
 import (
 	"karna/core"
 	"karna/internal/api"
+	"karna/internal/create"
 	"karna/internal/deploy"
 	"karna/internal/viz"
 
@@ -25,6 +26,22 @@ var cmdDeploy = &cobra.Command{
 
 		elapsed := deploy.Run(&target, &alias)
 		core.LogSuccessMessage("Completed in " + elapsed)
+	},
+}
+
+var cmdCreate = &cobra.Command{
+	Use:   "create",
+	Short: "Use Karna Create to create your Lambda application.",
+	Long:  `Karna Create will generate a template for your lambda application.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		core.LogSuccessMessage("Creation in progress...")
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		name, _ := cmd.Flags().GetString("name")
+		runtime, _ := cmd.Flags().GetString("runtime")
+		layerName, _ := cmd.Flags().GetString("layer-name")
+		withLayers, _ := cmd.Flags().GetBool("with-layers")
+		create.Run(&name, &layerName, &runtime, &withLayers)
 	},
 }
 
@@ -94,6 +111,10 @@ func init() {
 	var port string
 	var credentials string
 	var host string
+	var name string
+	var withLayers bool
+	var runtime string
+	var layerName string
 
 	cmdAPI.AddCommand(cmdAPIStart)
 	cmdViz.AddCommand(cmdVizShow, cmdVizCleanup)
@@ -104,11 +125,18 @@ func init() {
 	cmdDeploy.MarkFlagRequired("target")
 	cmdDeploy.MarkFlagRequired("alias")
 
+	cmdCreate.Flags().StringVarP(&name, "name", "n", "", "Folder name")
+	cmdCreate.Flags().StringVarP(&runtime, "runtime", "r", "", "Layers runtime")
+	cmdCreate.Flags().StringVarP(&layerName, "layer-name", "", "", "Layer name")
+	cmdCreate.Flags().BoolVar(&withLayers, "with-layers", false, "Init layers folder")
+
+	cmdCreate.MarkFlagRequired("name")
+
 	cmdVizShow.Flags().StringVarP(&port, "port", "p", "", "Database port")
 	cmdVizShow.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
 	cmdVizShow.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
 
-	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz)
+	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz, cmdCreate)
 }
 
 //Execute => Will register commands && execute the right one.

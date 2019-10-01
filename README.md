@@ -1,6 +1,6 @@
 # Karna
 
-Karna is a set of packages that allow, separately from the manager, to visualize and build visualization tools for your lambda architecture.
+Karna is a set of packages that allow you to manage and vizualise your lambda architecture.
 
 ## Installation
 

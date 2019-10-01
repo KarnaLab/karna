@@ -17,6 +17,6 @@ func zipArchive(source, target string) {
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 }

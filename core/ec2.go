@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -13,7 +12,7 @@ func (karnaEC2Model *KarnaEC2Model) init() {
 
 	if err != nil {
 		LogErrorMessage("unable to load SDK config, " + err.Error())
-		os.Exit(2)
+
 	}
 
 	karnaEC2Model.Client = ec2.New(cfg)
@@ -58,7 +57,7 @@ func (karnaEC2Model *KarnaEC2Model) getInstances() (instances []ec2.Instance) {
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	for _, reservation := range results.Reservations {

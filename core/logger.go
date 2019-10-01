@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/logrusorgru/aurora"
 )
@@ -16,7 +17,7 @@ func LogSuccessMessage(message string) {
 
 //LogErrorMessage => Print into CLI an error message.
 func LogErrorMessage(message string) {
-	fmt.Printf("%s %s\n",
+	log.Fatalf("%s %s\n",
 		aurora.Bold(aurora.Green("> Karna:")),
 
 		aurora.Bold(aurora.Red(message)))

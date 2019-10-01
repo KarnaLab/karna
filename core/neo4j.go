@@ -1,8 +1,6 @@
 package core
 
 import (
-	"os"
-
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
@@ -48,14 +46,14 @@ func (neo4j *KarnaNeo4J) Bulk(queries []string, args []map[string]interface{}) {
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	_, err = pipeline.ExecPipeline(args...)
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 }
 
@@ -68,20 +66,20 @@ func (neo4j *KarnaNeo4J) CleanUp() {
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	_, err = stmt.QueryNeo(nil)
 
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 }
 
 func handleError(err error) {
 	if err != nil {
 		LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 }

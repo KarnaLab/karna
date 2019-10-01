@@ -2,7 +2,6 @@ package deploy
 
 import (
 	"karna/core"
-	"os"
 	"time"
 )
 
@@ -30,7 +29,7 @@ func Run(target, alias *string) (timeElapsed string) {
 
 		if err != nil {
 			core.LogErrorMessage(err.Error())
-			os.Exit(2)
+
 		}
 	}
 	core.LogSuccessMessage("Done")
@@ -40,7 +39,7 @@ func Run(target, alias *string) (timeElapsed string) {
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 	core.LogSuccessMessage("Done")
 
@@ -49,7 +48,7 @@ func Run(target, alias *string) (timeElapsed string) {
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	core.LogSuccessMessage("Done")
@@ -58,7 +57,7 @@ func Run(target, alias *string) (timeElapsed string) {
 
 	if err != nil {
 		core.LogErrorMessage(err.Error())
-		os.Exit(2)
+
 	}
 
 	core.LogSuccessMessage("Done")
@@ -68,7 +67,7 @@ func Run(target, alias *string) (timeElapsed string) {
 
 		if err != nil {
 			core.LogErrorMessage(err.Error())
-			os.Exit(2)
+
 		}
 	}
 
