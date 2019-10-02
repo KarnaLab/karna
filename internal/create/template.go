@@ -1,13 +1,13 @@
 package create
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"karna/core"
 	"os"
 )
 
 const (
-	karnaTemplate = "{\"global\":{}, \"deployments\":[]}"
 	indexTemplate = `exports.handler = async (event) => {
     const response = {
         statusCode: 200,
@@ -53,12 +53,55 @@ func generateTemplate(name, functionName, runtime *string) {
 	}
 }
 
-func generateKarnaConfigFile(folder *string) {
+func generateDeploymentConfig(folder, functionName *string) (deployment *core.KarnaDeployment) {
+	deployment = &core.KarnaDeployment{
+		Src:          *folder,
+		File:         "lambda.zip",
+		FunctionName: *functionName,
+		Aliases: map[string]string{
+			"dev":  "fixed@update",
+			"prod": "1",
+		},
+	}
+	return
+}
+
+func generateKarnaConfigFile(folder, functionName *string) {
+	config := &core.KarnaConfigFile{
+		Global:      map[string]string{},
+		Deployments: []core.KarnaDeployment{},
+	}
+
 	path := *folder + "/karna.json"
+	deployment := generateDeploymentConfig(folder, functionName)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		createFileWithTemplate(path, karnaTemplate)
+		config.Deployments = append(config.Deployments, *deployment)
+	} else {
+		data, err := ioutil.ReadFile(path)
+
+		if err != nil {
+			core.LogErrorMessage(err.Error())
+		}
+
+		json.Unmarshal(data, &config)
+
+		isDeploymentDefined := core.FindDeployment(*functionName, config.Deployments)
+
+		if !isDeploymentDefined {
+			config.Deployments = append(config.Deployments, *deployment)
+
+			os.Remove(path)
+		}
 	}
+
+	jsonData, err := json.Marshal(config)
+
+	if err != nil {
+		core.LogErrorMessage(err.Error())
+	}
+
+	createFileWithTemplate(path, string(jsonData))
 }
 
 func generateLayout(folder, functionName *string) {
@@ -67,7 +110,7 @@ func generateLayout(folder, functionName *string) {
 		createFolder(*folder)
 	}
 
-	generateKarnaConfigFile(folder)
+	generateKarnaConfigFile(folder, functionName)
 
 	functionFolder := *folder + "/" + *functionName
 
@@ -98,5 +141,9 @@ func generateNodeJSRuntime(folder *string) {
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		createFolder(path)
+	}
+
+	if _, err := os.Stat(path + "/package.json"); os.IsNotExist(err) {
+		createFileWithTemplate(path+"/package.json", "{}")
 	}
 }

@@ -95,3 +95,21 @@ func findInt(needle int, haystack []int) (found bool) {
 	}
 	return
 }
+
+func FindStructInSlice(value string, key string, slice []interface{}) (found bool) {
+	for _, v := range slice {
+		if v.(map[string]string)[key] == value {
+			found = true
+		}
+	}
+	return
+}
+
+func FindDeployment(value string, deployments []KarnaDeployment) (found bool) {
+	for _, v := range deployments {
+		if v.FunctionName == value {
+			found = true
+		}
+	}
+	return
+}

@@ -82,26 +82,26 @@ type KarnaAGWAPI struct {
 
 //KarnaDeploymentPrune => Karna model for Prune option in Karna config file.
 type KarnaDeploymentPrune struct {
-	Alias bool `json:"alias"`
-	Keep  int  `json:"keep"`
+	Alias bool `json:"alias,omitempty"`
+	Keep  int  `json:"keep,omitempty"`
 }
 
 //KarnaDeployment => Karna model for Deployment key in Karna config file.
 type KarnaDeployment struct {
 	Src          string               `json:"src"`
-	Key          string               `json:"key"`
+	Key          string               `json:"key,omitempty"`
 	File         string               `json:"file"`
 	FunctionName string               `json:"functionName"`
-	Aliases      map[string]string    `json:"aliases"`
-	Bucket       string               `json:"bucket"`
-	Prune        KarnaDeploymentPrune `json:"prune"`
+	Aliases      map[string]string    `json:"aliases,omitempty"`
+	Bucket       string               `json:"bucket,omitempty"`
+	Prune        KarnaDeploymentPrune `json:"prune,omitempty"`
 }
 
 //KarnaConfigFile => Karna model for Karna config file.
 type KarnaConfigFile struct {
 	Global      map[string]string `json:"global"`
 	Deployments []KarnaDeployment `json:"deployments"`
-	Path        string
+	Path        string            `json:",omitempty"`
 }
 
 //KarnaQuery => Karna model for Neo4J query.
