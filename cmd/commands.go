@@ -38,10 +38,10 @@ var cmdCreate = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
+		functionName, _ := cmd.Flags().GetString("function-name")
 		runtime, _ := cmd.Flags().GetString("runtime")
-		layerName, _ := cmd.Flags().GetString("layer-name")
-		withLayers, _ := cmd.Flags().GetBool("with-layers")
-		create.Run(&name, &layerName, &runtime, &withLayers)
+
+		create.Run(&name, &functionName, &runtime)
 	},
 }
 
@@ -112,9 +112,8 @@ func init() {
 	var credentials string
 	var host string
 	var name string
-	var withLayers bool
 	var runtime string
-	var layerName string
+	var functionName string
 
 	cmdAPI.AddCommand(cmdAPIStart)
 	cmdViz.AddCommand(cmdVizShow, cmdVizCleanup)
@@ -127,10 +126,10 @@ func init() {
 
 	cmdCreate.Flags().StringVarP(&name, "name", "n", "", "Folder name")
 	cmdCreate.Flags().StringVarP(&runtime, "runtime", "r", "", "Layers runtime")
-	cmdCreate.Flags().StringVarP(&layerName, "layer-name", "", "", "Layer name")
-	cmdCreate.Flags().BoolVar(&withLayers, "with-layers", false, "Init layers folder")
+	cmdCreate.Flags().StringVarP(&functionName, "function-name", "f", "", "Function name")
 
 	cmdCreate.MarkFlagRequired("name")
+	cmdCreate.MarkFlagRequired("function-name")
 
 	cmdVizShow.Flags().StringVarP(&port, "port", "p", "", "Database port")
 	cmdVizShow.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
