@@ -37,25 +37,9 @@ func createFileWithTemplate(file, template string) {
 	}
 }
 
-func generateTemplate(name, functionName, runtime *string) {
-	dir, err := os.Getwd()
-
-	if err != nil {
-		core.LogErrorMessage(err.Error())
-	}
-
-	folder := dir + "/" + *name
-
-	generateLayout(&folder, functionName)
-
-	if len(*runtime) > 0 {
-		generateLayersTemplate(runtime, &folder)
-	}
-}
-
-func generateDeploymentConfig(folder, functionName *string) (deployment *core.KarnaDeployment) {
+func generateDeploymentConfig(functionName *string) (deployment *core.KarnaDeployment) {
 	deployment = &core.KarnaDeployment{
-		Src:          *folder,
+		Src:          *functionName,
 		File:         "lambda.zip",
 		FunctionName: *functionName,
 		Aliases: map[string]string{
@@ -73,7 +57,7 @@ func generateKarnaConfigFile(folder, functionName *string) {
 	}
 
 	path := *folder + "/karna.json"
-	deployment := generateDeploymentConfig(folder, functionName)
+	deployment := generateDeploymentConfig(functionName)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		config.Deployments = append(config.Deployments, *deployment)

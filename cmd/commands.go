@@ -41,7 +41,8 @@ var cmdCreate = &cobra.Command{
 		functionName, _ := cmd.Flags().GetString("function-name")
 		runtime, _ := cmd.Flags().GetString("runtime")
 
-		create.Run(&name, &functionName, &runtime)
+		elapsed := create.Run(&name, &functionName, &runtime)
+		core.LogSuccessMessage("Completed in " + elapsed)
 	},
 }
 
