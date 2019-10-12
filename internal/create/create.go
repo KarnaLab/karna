@@ -1,7 +1,7 @@
 package create
 
 import (
-	"karna/core"
+	"github.com/karbonn/karna/core"
 	"os"
 	"time"
 )

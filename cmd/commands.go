@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"karna/core"
-	"karna/internal/api"
-	"karna/internal/create"
-	"karna/internal/deploy"
-	"karna/internal/viz"
+	"github.com/karbonn/karna/core"
+	"github.com/karbonn/karna/internal/api"
+	"github.com/karbonn/karna/internal/create"
+	"github.com/karbonn/karna/internal/deploy"
+	"github.com/karbonn/karna/internal/viz"
 
 	"github.com/spf13/cobra"
 )
