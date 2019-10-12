@@ -3,9 +3,10 @@ on: [push]
 jobs:
   build:
     name: Release
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-10.14, windows-2016, ubuntu-18.04]
+        os: [macOS-10.14, windows-2016, ubuntu-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
