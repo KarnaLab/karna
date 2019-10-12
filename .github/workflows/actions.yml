@@ -16,6 +16,9 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - name: Fetch dependencies
-        run: go get ./...
+        run: |
+          go get -u github.com/graphql-go/graphql
+          go get -u github.com/spf13/cobra
+          go get
       - name: Build
-        run: go build
+        run: go build main.go
