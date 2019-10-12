@@ -2,12 +2,12 @@ name: Release package
 on: [push]
 jobs:
   build:
-    name: Release on ${{ matrix.os }} for ${{ matrix.go }}
+    name: Release on ${{ matrix.os }} for version: ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-10.14, windows-2016, ubuntu-latest]
-        go: ["1.11"]
+        os: [macOS-10.14, ubuntu-latest]
+        go: ["1.13"]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
