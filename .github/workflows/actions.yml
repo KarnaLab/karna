@@ -3,12 +3,9 @@ on: [push]
 jobs:
   build:
     name: Release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macOS-10.14, windows-2016, ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Build
-        uses: cedrickring/golang-action@1.4.1
+        uses: cedrickring/golang-action@master
