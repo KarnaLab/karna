@@ -1,6 +1,6 @@
 name: Release package
 on: [push]
-  branch:
+  branches:
     dev
 jobs:
   build:
