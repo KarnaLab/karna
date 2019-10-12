@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"karna/core"
+	"github.com/karbonn/karna/core"
 	"net/http"
 
 	"github.com/graphql-go/graphql"

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"karna/core"
+	"github.com/karbonn/karna/core"
 	"net/http"
 	"time"
 )
