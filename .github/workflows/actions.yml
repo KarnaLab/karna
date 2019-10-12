@@ -1,8 +1,7 @@
 name: Release package
-on: 
+on:
   push:
-    branches:
-      dev
+    branches: dev
 jobs:
   build:
     name: Release on ${{ matrix.os }} for version ${{ matrix.go }}
@@ -20,8 +19,8 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Build
         run: go build main.go
-            - name: Create Pull Request
-      - uses: peter-evans/create-pull-request@v1.5.1
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v1.5.1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           COMMIT_MESSAGE: "PR available for merging"
