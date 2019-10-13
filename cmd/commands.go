@@ -80,7 +80,12 @@ var cmdVizCleanup = &cobra.Command{
 		core.LogSuccessMessage("Cleaning Neo4J in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		elapsed := viz.Cleanup()
+		port, _ := cmd.Flags().GetString("port")
+		credentials, _ := cmd.Flags().GetString("credentials")
+		host, _ := cmd.Flags().GetString("host")
+
+		elapsed := viz.Cleanup(&port, &credentials, &host)
+
 		core.LogSuccessMessage("Completed in " + elapsed)
 	},
 }
@@ -135,6 +140,10 @@ func init() {
 	cmdVizShow.Flags().StringVarP(&port, "port", "p", "", "Database port")
 	cmdVizShow.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
 	cmdVizShow.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
+
+	cmdVizCleanup.Flags().StringVarP(&port, "port", "p", "", "Database port")
+	cmdVizCleanup.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
+	cmdVizCleanup.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
 
 	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz, cmdCreate)
 }

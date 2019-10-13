@@ -1,10 +1,11 @@
 package viz
 
 import (
-	"github.com/karbonn/karna/core"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/karbonn/karna/core"
 )
 
 var neo4j core.KarnaNeo4J
@@ -47,8 +48,17 @@ func Run(port, credentials, host *string) (timeElapsed string) {
 }
 
 //Cleanup => Will detach delete all Neo4J nodes.
-func Cleanup() (timeElapsed string) {
+func Cleanup(port, credentials, host *string) (timeElapsed string) {
 	startTime := time.Now()
+	username, password := parseCredentials(*credentials)
+
+	neo4j.Configuration = core.KarnaNeo4JConfiguration{
+		Username: username,
+		Password: password,
+		Port:     *port,
+		Host:     *host,
+	}
+
 	neo4j.CleanUp()
 
 	timeElapsed = time.Since(startTime).String()
