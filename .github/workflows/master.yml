@@ -13,17 +13,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+      - name: Login to Docker
+        run: docker login docker.pkg.github.com --username karbonn
+      - name: Build Docker Image
+        run: |
+          docker build -t karna/latest .
+      - name: Tag Docker image
+        run: docker tag karna/latest docker.pkg.github.com/karbonn/karna/karna:latest
+      - name: Deploy Docker image
+        run: docker push docker.pkg.github.com/karbonn/karna/karna:latest
