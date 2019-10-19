@@ -6,4 +6,4 @@ WORKDIR /app
 
 COPY . /app
 
-RUN cd /karna && go install 
+RUN cd /app && go install 
