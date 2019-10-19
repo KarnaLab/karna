@@ -14,6 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Bump version and push tag
+        id: create_tag
         uses: anothrNick/github-tag-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -23,8 +24,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.tag_sha }}
-          release_name: Release ${{ github.tag_sha }}
+          tag_name: ${{ steps.create_tag.outputs.new_tag  }}
+          release_name: Release ${{ steps.create_tag.outputs.new_tag  }}
           draft: false
           prerelease: false
   deploy:
