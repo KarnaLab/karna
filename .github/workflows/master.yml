@@ -38,6 +38,6 @@ jobs:
       - name: Build Docker image
         run: |
           docker login docker.pkg.github.com -u karbonn -p ${{ secrets.GH_TOKEN }}
-          docker build -t docker.pkg.github.com/karbonn/karna/karna:latest
+          docker build -t docker.pkg.github.com/karbonn/karna/karna:latest .
       - name: Deploy Docker image
         run: docker push docker.pkg.github.com/karbonn/karna/karna:latest
