@@ -4,6 +4,7 @@ require (
 	github.com/aws/aws-sdk-go v1.25.11
 	github.com/aws/aws-sdk-go-v2 v0.14.0
 	github.com/dsnet/compress v0.0.1 // indirect
+	github.com/frankban/quicktest v1.5.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/graphql-go/graphql v0.7.8
