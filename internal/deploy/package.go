@@ -1,22 +1,19 @@
 package deploy
 
 import (
-	"github.com/karnalab/karna/core"
 	"os"
 
 	"github.com/mholt/archiver"
 )
 
-func zipArchive(source, target string) {
+func zipArchive(source, target string) (err error) {
 
 	if _, err := os.Stat(target); err == nil {
 		os.Remove(target)
 	}
 
-	err := archiver.Archive([]string{source}, target)
-
-	if err != nil {
-		core.LogErrorMessage(err.Error())
-
+	if err = archiver.Archive([]string{source}, target); err != nil {
+		return err
 	}
+	return
 }

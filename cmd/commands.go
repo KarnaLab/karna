@@ -3,13 +3,13 @@ package cmd
 import (
 	"github.com/karnalab/karna/core"
 	"github.com/karnalab/karna/internal/api"
-	"github.com/karnalab/karna/internal/create"
 	"github.com/karnalab/karna/internal/deploy"
 	"github.com/karnalab/karna/internal/viz"
 
 	"github.com/spf13/cobra"
 )
 
+var logger *core.KarnaLogger
 var rootCmd = &cobra.Command{Use: "karna"}
 
 var cmdDeploy = &cobra.Command{
@@ -24,11 +24,15 @@ var cmdDeploy = &cobra.Command{
 		target, _ := cmd.Flags().GetString("target")
 		alias, _ := cmd.Flags().GetString("alias")
 
-		elapsed := deploy.Run(&target, &alias)
-		core.LogSuccessMessage("Completed in " + elapsed)
+		if elapsed, err := deploy.Run(&target, &alias); err != nil {
+			logger.Error(err.Error())
+		} else {
+			logger.Log("Completed in " + elapsed)
+		}
 	},
 }
 
+/*
 var cmdCreate = &cobra.Command{
 	Use:   "create",
 	Short: "Use Karna Create to create your Lambda application.",
@@ -45,7 +49,7 @@ var cmdCreate = &cobra.Command{
 		core.LogSuccessMessage("Completed in " + elapsed)
 	},
 }
-
+*/
 var cmdViz = &cobra.Command{
 	Use:   "viz [sub]",
 	Short: "Use Karna Viz to build a Lambda tree on Neo4J.",
@@ -67,8 +71,11 @@ var cmdVizShow = &cobra.Command{
 		credentials, _ := cmd.Flags().GetString("credentials")
 		host, _ := cmd.Flags().GetString("host")
 
-		elapsed := viz.Run(&port, &credentials, &host)
-		core.LogSuccessMessage("Completed in " + elapsed)
+		if elapsed, err := viz.Run(&port, &credentials, &host); err != nil {
+			logger.Error(err.Error())
+		} else {
+			logger.Log("Completed in " + elapsed)
+		}
 	},
 }
 
@@ -84,9 +91,11 @@ var cmdVizCleanup = &cobra.Command{
 		credentials, _ := cmd.Flags().GetString("credentials")
 		host, _ := cmd.Flags().GetString("host")
 
-		elapsed := viz.Cleanup(&port, &credentials, &host)
-
-		core.LogSuccessMessage("Completed in " + elapsed)
+		if elapsed, err := viz.Cleanup(&port, &credentials, &host); err != nil {
+			logger.Error(err.Error())
+		} else {
+			logger.Log("Completed in " + elapsed)
+		}
 	},
 }
 
@@ -117,10 +126,10 @@ func init() {
 	var port string
 	var credentials string
 	var host string
-	var name string
+	/*var name string
 	var runtime string
 	var functionName string
-
+	*/
 	cmdAPI.AddCommand(cmdAPIStart)
 	cmdViz.AddCommand(cmdVizShow, cmdVizCleanup)
 
@@ -129,14 +138,14 @@ func init() {
 
 	cmdDeploy.MarkFlagRequired("target")
 	cmdDeploy.MarkFlagRequired("alias")
+	/*
+		cmdCreate.Flags().StringVarP(&name, "name", "n", "", "Folder name")
+		cmdCreate.Flags().StringVarP(&runtime, "runtime", "r", "", "Layers runtime")
+		cmdCreate.Flags().StringVarP(&functionName, "function-name", "f", "", "Function name")
 
-	cmdCreate.Flags().StringVarP(&name, "name", "n", "", "Folder name")
-	cmdCreate.Flags().StringVarP(&runtime, "runtime", "r", "", "Layers runtime")
-	cmdCreate.Flags().StringVarP(&functionName, "function-name", "f", "", "Function name")
-
-	cmdCreate.MarkFlagRequired("name")
-	cmdCreate.MarkFlagRequired("function-name")
-
+		cmdCreate.MarkFlagRequired("name")
+		cmdCreate.MarkFlagRequired("function-name")
+	*/
 	cmdVizShow.Flags().StringVarP(&port, "port", "p", "", "Database port")
 	cmdVizShow.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
 	cmdVizShow.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
@@ -145,7 +154,7 @@ func init() {
 	cmdVizCleanup.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
 	cmdVizCleanup.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
 
-	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz, cmdCreate)
+	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz)
 }
 
 //Execute => Will register commands && execute the right one.

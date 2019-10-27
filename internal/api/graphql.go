@@ -2,23 +2,23 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/karnalab/karna/core"
+	"fmt"
 	"net/http"
 
 	"github.com/graphql-go/graphql"
 )
 
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
-	result := graphql.Do(graphql.Params{
+func executeQuery(query string, schema graphql.Schema) (result *graphql.Result, err error) {
+	result = graphql.Do(graphql.Params{
 		Schema:        schema,
 		RequestString: query,
 	})
 
 	if len(result.Errors) > 0 {
-		core.LogErrorMessage("An error occured.")
+		return result, fmt.Errorf("an error occured")
 	}
 
-	return result
+	return
 }
 
 var queryType = graphql.NewObject(
@@ -47,7 +47,11 @@ var schema, _ = graphql.NewSchema(
 )
 
 func buildGraphQLAPI(w http.ResponseWriter, r *http.Request) {
-	result := executeQuery(r.URL.Query().Get("query"), schema)
+	result, err := executeQuery(r.URL.Query().Get("query"), schema)
+
+	if err != nil {
+		panic(err)
+	}
 
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		panic(err)

@@ -1,9 +1,10 @@
 package api
 
 import (
-	"github.com/karnalab/karna/core"
 	"net/http"
 	"time"
+
+	"github.com/karnalab/karna/core"
 )
 
 func jsonMiddleware(next http.Handler) http.Handler {
@@ -14,13 +15,13 @@ func jsonMiddleware(next http.Handler) http.Handler {
 }
 
 func loggerMiddleware(next http.Handler) http.Handler {
+	var logger core.KarnaLogger
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
 		next.ServeHTTP(w, r)
 
 		log := r.Method + " " + r.RequestURI + " " + time.Since(start).String()
-
-		core.LogSuccessMessage(log)
+		logger.Log(log)
 	})
 }

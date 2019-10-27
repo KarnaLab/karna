@@ -1,73 +1,71 @@
 package deploy
 
 import (
-	"github.com/karnalab/karna/core"
 	"time"
+
+	"github.com/karnalab/karna/core"
 )
 
-func Run(target, alias *string) (timeElapsed string) {
+func Run(target, alias *string) (timeElapsed string, err error) {
+	var logger *core.KarnaLogger
 	startTime := time.Now()
 
-	configFile := getConfigFile()
+	configFile, err := getConfigFile()
+
+	if err != nil {
+		return timeElapsed, err
+	}
+
 	targetDeployment := getTargetDeployment(configFile, target)
 
-	core.LogSuccessMessage("Checking requirements...")
+	logger.Log("Checking requirements...")
 
 	checkRequirements(targetDeployment, *alias)
 
-	core.LogSuccessMessage("Done")
+	logger.Log("Done")
 
 	var source = configFile.Path + "/" + targetDeployment.Src
 	var output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias + "/" + targetDeployment.File
 
-	core.LogSuccessMessage("Building archive...")
+	logger.Log("Building archive...")
 
-	zipArchive(source, output)
+	if err = zipArchive(source, output); err != nil {
+		return timeElapsed, err
+	}
 
 	if targetDeployment.Bucket != "" {
-		err := core.S3.Upload(targetDeployment, output)
-
-		if err != nil {
-			core.LogErrorMessage(err.Error())
-
+		if err = core.S3.Upload(targetDeployment, output); err != nil {
+			return timeElapsed, err
 		}
 	}
-	core.LogSuccessMessage("Done")
 
-	core.LogSuccessMessage("Updating function code...")
-	err := core.Lambda.UpdateFunctionCode(targetDeployment, output)
+	logger.Log("Done")
+	logger.Log("Updating function code...")
 
-	if err != nil {
-		core.LogErrorMessage(err.Error())
-
-	}
-	core.LogSuccessMessage("Done")
-
-	core.LogSuccessMessage("Publishing function...")
-	err = core.Lambda.PublishFunction(targetDeployment)
+	err = core.Lambda.UpdateFunctionCode(targetDeployment, output)
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
-
+		return timeElapsed, err
 	}
 
-	core.LogSuccessMessage("Done")
+	logger.Log("Done")
+	logger.Log("Publishing function...")
 
-	err = core.Lambda.SyncAlias(targetDeployment, *alias)
-
-	if err != nil {
-		core.LogErrorMessage(err.Error())
-
+	if err = core.Lambda.PublishFunction(targetDeployment); err != nil {
+		return timeElapsed, err
 	}
 
-	core.LogSuccessMessage("Done")
+	logger.Log("Done")
+
+	if err = core.Lambda.SyncAlias(targetDeployment, *alias); err != nil {
+		return timeElapsed, err
+	}
+
+	logger.Log("Done")
 
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
-		err := core.Lambda.Prune(targetDeployment)
-
-		if err != nil {
-			core.LogErrorMessage(err.Error())
-
+		if err = core.Lambda.Prune(targetDeployment); err != nil {
+			return timeElapsed, err
 		}
 	}
 
