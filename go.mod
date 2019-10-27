@@ -15,4 +15,4 @@ require (
 	github.com/spf13/cobra v0.0.5
 )
 
-replace github.com/karnalab/karna v1.1.0 => ../karna
+replace github.com/karnalab/karna v1.1.0 => ./../karna
