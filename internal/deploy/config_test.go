@@ -1,10 +1,16 @@
 package deploy
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/karnalab/karna/core"
-	"github.com/karnalab/karna/create"
+)
+
+const (
+	filePerm = 0644
 )
 
 func TestCheckRequirementsWithValidInputs(t *testing.T) {
@@ -52,17 +58,55 @@ func TestGetConfigFileWithoutConfigFile(t *testing.T) {
 	if err != nil {
 		t.Log(err.Error())
 	} else {
-		t.Errorf("getConfigFile must not find config file")
+		t.Errorf("getConfigFile FAILED because it must not find config file")
 	}
 }
 
 func TestGetConfigFileWithConfigFile(t *testing.T) {
-	create.Run("test", "functionName", "nodejs")
-	_, err := getConfigFile()
+	functionName := "test"
+	deployment := &core.KarnaDeployment{
+		Src:          functionName,
+		File:         "lambda.zip",
+		FunctionName: functionName,
+		Aliases: map[string]string{
+			"dev":  "fixed@update",
+			"prod": "1",
+		},
+	}
+	jsonData, err := json.Marshal(deployment)
+	data := []byte(jsonData)
+	err = ioutil.WriteFile("./karna.json", data, filePerm)
 
-	if err != nil {
-		t.Log(err.Error())
+	_, err = getConfigFile()
+
+	if err == nil {
+		t.Log("getConfigFile PASSED because it must find config file")
 	} else {
-		t.Errorf("getConfigFile must not find config file")
+		t.Errorf(err.Error())
+	}
+	os.Remove("./karna.json")
+}
+
+func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
+	deployment := core.KarnaDeployment{
+		Src:          "functionName",
+		File:         "lambda.zip",
+		FunctionName: "functionName",
+		Aliases: map[string]string{
+			"dev":  "fixed@update",
+			"prod": "1",
+		},
+	}
+	config := core.KarnaConfigFile{
+		Global:      map[string]string{},
+		Deployments: []core.KarnaDeployment{deployment},
+	}
+	target := "functionName"
+	targetDeployment := getTargetDeployment(&config, &target)
+
+	if len(targetDeployment.Src) > 0 {
+		t.Log("getTargetDeployment PASSED because it must find the deployment with the right target")
+	} else {
+		t.Errorf("getTargetDeployment FAILED because it must find the deployment")
 	}
 }
