@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/karbonn/karna/cmd"
+	"github.com/karnalab/karna/cmd"
 )
 
 func main() {

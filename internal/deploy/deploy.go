@@ -1,7 +1,7 @@
 package deploy
 
 import (
-	"github.com/karbonn/karna/core"
+	"github.com/karnalab/karna/core"
 	"time"
 )
 

@@ -3,7 +3,7 @@ package create
 import (
 	"encoding/json"
 	"io/ioutil"
-	"github.com/karbonn/karna/core"
+	"github.com/karnalab/karna/core"
 	"os"
 )
 

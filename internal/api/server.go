@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"flag"
-	"github.com/karbonn/karna/core"
+	"github.com/karnalab/karna/core"
 	"net/http"
 	"os"
 	"os/signal"

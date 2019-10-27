@@ -1,7 +1,7 @@
 package viz
 
 import (
-	"github.com/karbonn/karna/core"
+	"github.com/karnalab/karna/core"
 	"sync"
 )
 

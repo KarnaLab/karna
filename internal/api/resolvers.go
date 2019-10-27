@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/karbonn/karna/core"
+	"github.com/karnalab/karna/core"
 
 	"github.com/graphql-go/graphql"
 )

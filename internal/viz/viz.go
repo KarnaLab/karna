@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/karbonn/karna/core"
+	"github.com/karnalab/karna/core"
 )
 
 var neo4j core.KarnaNeo4J
