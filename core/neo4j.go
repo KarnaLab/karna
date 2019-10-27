@@ -33,7 +33,11 @@ func (neo4j *KarnaNeo4J) createConnection() bolt.Conn {
 	parseConfiguration(&neo4j.Configuration)
 
 	con, err := driver.OpenNeo(protocol + "://" + neo4j.Configuration.Username + ":" + neo4j.Configuration.Password + "@" + neo4j.Configuration.Host + ":" + neo4j.Configuration.Port)
-	handleError(err)
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	return con
 }
 
@@ -45,15 +49,13 @@ func (neo4j *KarnaNeo4J) Bulk(queries []string, args []map[string]interface{}) {
 	pipeline, err := conn.PreparePipeline(queries...)
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	_, err = pipeline.ExecPipeline(args...)
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 }
 
@@ -65,21 +67,12 @@ func (neo4j *KarnaNeo4J) CleanUp() {
 	stmt, err := conn.PrepareNeo("MATCH (n) DETACH DELETE n")
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	_, err = stmt.QueryNeo(nil)
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 }

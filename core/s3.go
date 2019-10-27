@@ -14,7 +14,7 @@ func (KarnaS3Model *KarnaS3Model) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		LogErrorMessage("unable to load SDK config, " + err.Error())
+		logger.Error("unable to load SDK config, " + err.Error())
 	}
 
 	KarnaS3Model.Client = s3.New(cfg)

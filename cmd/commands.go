@@ -18,7 +18,7 @@ var cmdDeploy = &cobra.Command{
 	Long: `Karna Deployment will build and deploy your Lambda function 
 	on top of your config file.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		core.LogSuccessMessage("Deployment in progress...")
+		logger.Log("Deployment in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		target, _ := cmd.Flags().GetString("target")
@@ -64,7 +64,7 @@ var cmdVizShow = &cobra.Command{
 	Long: `This command will call AWS services with your IAM role to build the Lambda
 	tree and its dependencies.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		core.LogSuccessMessage("Create Neo4J trees in progress...")
+		logger.Log("Create Neo4J trees in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		port, _ := cmd.Flags().GetString("port")
@@ -84,7 +84,7 @@ var cmdVizCleanup = &cobra.Command{
 	Short: "Clean Neo4J database.",
 	Long:  "This subcommand will remove all Neo4J nodes.",
 	PreRun: func(cmd *cobra.Command, args []string) {
-		core.LogSuccessMessage("Cleaning Neo4J in progress...")
+		logger.Log("Cleaning Neo4J in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		port, _ := cmd.Flags().GetString("port")
@@ -113,7 +113,7 @@ var cmdAPIStart = &cobra.Command{
 	Long: `Karna API will start a WebServer which exposes a collection of
 	endpoints to build, interact and vizualize your Lambda architecture.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		core.LogSuccessMessage("Starting API in progress...")
+		logger.Log("Starting API in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		api.Run()

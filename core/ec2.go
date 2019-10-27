@@ -11,8 +11,7 @@ func (karnaEC2Model *KarnaEC2Model) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		LogErrorMessage("unable to load SDK config, " + err.Error())
-
+		logger.Error("unable to load SDK config, " + err.Error())
 	}
 
 	karnaEC2Model.Client = ec2.New(cfg)
@@ -56,8 +55,7 @@ func (karnaEC2Model *KarnaEC2Model) getInstances() (instances []ec2.Instance) {
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	for _, reservation := range results.Reservations {
@@ -74,7 +72,11 @@ func (karnaEC2Model *KarnaEC2Model) getActiveSubnets(activeSubnetsChan chan []ec
 
 	input := &ec2.DescribeSubnetsInput{}
 	req := karnaEC2Model.Client.DescribeSubnetsRequest(input)
-	results, _ := req.Send(context.Background())
+	results, err := req.Send(context.Background())
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
 
 	for _, subnet := range results.Subnets {
 		activeSubnets = append(activeSubnets, subnet)
@@ -87,7 +89,11 @@ func (karnaEC2Model *KarnaEC2Model) getSecurityGroups(securityGroupsChan chan []
 
 	input := &ec2.DescribeSecurityGroupsInput{}
 	req := karnaEC2Model.Client.DescribeSecurityGroupsRequest(input)
-	results, _ := req.Send(context.Background())
+	results, err := req.Send(context.Background())
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
 
 	for _, securityGroup := range results.SecurityGroups {
 		securityGroups = append(securityGroups, securityGroup)

@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -9,15 +10,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-func (karnaAGW *KarnaAPIGatewayModel) init() {
+func (karnaAGW *KarnaAPIGatewayModel) init() (err error) {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		LogErrorMessage("unable to load SDK config, " + err.Error())
-
+		return fmt.Errorf("unable to load SDK config, " + err.Error())
 	}
 
 	karnaAGW.Client = apigateway.New(cfg)
+	return
 }
 
 //BuildAGWTree => Will Build APIGateway tree for Karna model.
@@ -69,12 +70,10 @@ func (karnaAGW *KarnaAPIGatewayModel) getAPIS() (apis []apigateway.RestApi) {
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	apis = results.Items
-
 	return
 }
 
@@ -86,8 +85,7 @@ func (karnaAGW *KarnaAPIGatewayModel) getStagesByAPI(stagesChan chan []KarnaAGWS
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	for _, stage := range results.Item {
@@ -109,8 +107,7 @@ func (karnaAGW *KarnaAPIGatewayModel) getResourcesForAPI(resourcesChan chan []ma
 	results, err := req.Send(context.Background())
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	for _, resource := range results.Items {
@@ -127,7 +124,11 @@ func (karnaAGW *KarnaAPIGatewayModel) fetchPathMappings(api *KarnaAGWAPI, apis *
 	input := &apigateway.GetDomainNamesInput{}
 	req := karnaAGW.Client.GetDomainNamesRequest(input)
 
-	results, _ := req.Send(context.Background())
+	results, err := req.Send(context.Background())
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
 
 	for _, domainName := range results.Items {
 		mappings := karnaAGW.getBasePathMappings(domainName)
@@ -147,7 +148,12 @@ func (karnaAGW *KarnaAPIGatewayModel) getBasePathMappings(domainName apigateway.
 	input := &apigateway.GetBasePathMappingsInput{DomainName: aws.String(*domainName.DomainName)}
 	req := karnaAGW.Client.GetBasePathMappingsRequest(input)
 
-	results, _ := req.Send(context.Background())
+	results, err := req.Send(context.Background())
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	mappings = results.Items
 
 	return
