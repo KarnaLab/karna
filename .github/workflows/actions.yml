@@ -18,6 +18,9 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - name: Run tests
-        run: go test ./... -p 1
+        run: |
+        cd internal/core
+        go test ./... -p 1
+        cd ../..
       - name: Build
         run: go build main.go
