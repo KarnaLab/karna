@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/karnalab/karna/core"
 	"github.com/karnalab/karna/internal/api"
 	"github.com/karnalab/karna/internal/deploy"
@@ -26,6 +28,7 @@ var cmdDeploy = &cobra.Command{
 
 		if elapsed, err := deploy.Run(&target, &alias); err != nil {
 			logger.Error(err.Error())
+			os.Exit(1)
 		} else {
 			logger.Log("Completed in " + elapsed)
 		}
@@ -73,6 +76,7 @@ var cmdVizShow = &cobra.Command{
 
 		if elapsed, err := viz.Run(&port, &credentials, &host); err != nil {
 			logger.Error(err.Error())
+			os.Exit(1)
 		} else {
 			logger.Log("Completed in " + elapsed)
 		}
@@ -93,6 +97,7 @@ var cmdVizCleanup = &cobra.Command{
 
 		if elapsed, err := viz.Cleanup(&port, &credentials, &host); err != nil {
 			logger.Error(err.Error())
+			os.Exit(1)
 		} else {
 			logger.Log("Completed in " + elapsed)
 		}

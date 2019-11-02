@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -35,7 +34,7 @@ func startServer(router *mux.Router) {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			fmt.Errorf(err.Error())
+			logger.Error(err.Error())
 		}
 	}()
 

@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/logrusorgru/aurora"
 )
@@ -17,7 +16,7 @@ func (*KarnaLogger) Log(message string) {
 }
 
 func (*KarnaLogger) Error(message string) {
-	log.Fatalf("%s %s\n",
+	fmt.Printf("%s %s\n",
 		aurora.Bold(aurora.Green("> Karna:")),
 
 		aurora.Bold(aurora.Red(message)))
