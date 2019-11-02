@@ -3,8 +3,9 @@ package create
 import (
 	"encoding/json"
 	"io/ioutil"
-	"github.com/karbonn/karna/core"
 	"os"
+
+	"github.com/karnalab/karna/core"
 )
 
 const (
@@ -20,21 +21,16 @@ const (
 	folderPerm = 0755
 )
 
-func createFolder(folder string) {
-	err := os.Mkdir(folder, folderPerm)
-
-	if err != nil {
-		core.LogErrorMessage(err.Error())
-	}
+func createFolder(folder string) (err error) {
+	err = os.Mkdir(folder, folderPerm)
+	return
 }
 
-func createFileWithTemplate(file, template string) {
+func createFileWithTemplate(file, template string) (err error) {
 	data := []byte(template)
-	err := ioutil.WriteFile(file, data, filePerm)
+	err = ioutil.WriteFile(file, data, filePerm)
 
-	if err != nil {
-		core.LogErrorMessage(err.Error())
-	}
+	return
 }
 
 func generateDeploymentConfig(functionName *string) (deployment *core.KarnaDeployment) {
@@ -50,7 +46,7 @@ func generateDeploymentConfig(functionName *string) (deployment *core.KarnaDeplo
 	return
 }
 
-func generateKarnaConfigFile(folder, functionName *string) {
+func generateKarnaConfigFile(folder, functionName *string) (err error) {
 	config := &core.KarnaConfigFile{
 		Global:      map[string]string{},
 		Deployments: []core.KarnaDeployment{},
@@ -65,7 +61,7 @@ func generateKarnaConfigFile(folder, functionName *string) {
 		data, err := ioutil.ReadFile(path)
 
 		if err != nil {
-			core.LogErrorMessage(err.Error())
+			return err
 		}
 
 		json.Unmarshal(data, &config)
@@ -82,10 +78,11 @@ func generateKarnaConfigFile(folder, functionName *string) {
 	jsonData, err := json.Marshal(config)
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		return err
 	}
 
 	createFileWithTemplate(path, string(jsonData))
+	return
 }
 
 func generateLayout(folder, functionName *string) {

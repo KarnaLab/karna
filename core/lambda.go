@@ -46,8 +46,7 @@ func (karnaLambdaModel *KarnaLambdaModel) init() {
 	cfg, err := external.LoadDefaultAWSConfig()
 
 	if err != nil {
-		LogErrorMessage("unable to load SDK config, " + err.Error())
-
+		logger.Error("unable to load SDK config, " + err.Error())
 	}
 
 	karnaLambdaModel.Client = lambda.New(cfg)
@@ -74,7 +73,7 @@ func (karnaLambdaModel *KarnaLambdaModel) getFunctions() (functions []lambda.Fun
 	response, err := req.Send(context.Background())
 
 	if err != nil {
-		panic(err.Error())
+		logger.Error(err.Error())
 	}
 
 	functions = response.Functions
@@ -91,8 +90,7 @@ func (karnaLambdaModel *KarnaLambdaModel) getVersions(versions chan []lambda.Fun
 	response, err := request.Send(context.Background())
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	versions <- response.Versions
@@ -106,7 +104,11 @@ func (karnaLambdaModel *KarnaLambdaModel) getPolicy(policies chan map[string][]s
 	policyInput = &lambda.GetPolicyInput{FunctionName: aws.String(functionArn)}
 	request := karnaLambdaModel.Client.GetPolicyRequest(policyInput.(*lambda.GetPolicyInput))
 
-	response, _ := request.Send(context.Background())
+	response, err := request.Send(context.Background())
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
 
 	if response != nil {
 		json.Unmarshal([]byte(*response.Policy), &policy)
@@ -177,9 +179,8 @@ func (karnaLambdaModel *KarnaLambdaModel) GetFunctionByFunctionName(functionName
 
 	req := karnaLambdaModel.Client.GetFunctionConfigurationRequest(input)
 
-	response, err := req.Send(context.Background())
+	_, err = req.Send(context.Background())
 
-	fmt.Println(response)
 	return
 }
 
@@ -219,10 +220,10 @@ func (karnaLambdaModel *KarnaLambdaModel) SyncAlias(deployment *KarnaDeployment,
 	aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
 
 	if a := findAlias(aliases, alias); a == nil {
-		LogSuccessMessage("Creation of alias: " + alias)
+		logger.Log("creation of alias: " + alias)
 		karnaLambdaModel.createAlias(deployment, alias)
 	} else {
-		LogSuccessMessage("Updating alias: " + alias)
+		logger.Log("updating alias: " + alias)
 		karnaLambdaModel.updateAlias(deployment, alias)
 	}
 
@@ -284,7 +285,7 @@ func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (er
 
 		for _, a := range aliases {
 			if _, ok := deployment.Aliases[*a.Name]; !ok {
-				LogSuccessMessage("Prune alias: " + *a.Name)
+				logger.Log("prune alias: " + *a.Name)
 
 				input := &lambda.DeleteAliasInput{
 					Name:         aws.String(*a.Name),
@@ -337,7 +338,7 @@ func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (er
 
 		pruneVersionsCount := strconv.Itoa(len(versionsToPrune))
 
-		LogSuccessMessage("Prune: " + pruneVersionsCount + " version(s)")
+		logger.Log("prune: " + pruneVersionsCount + " version(s)")
 
 		var wg sync.WaitGroup
 
@@ -365,8 +366,7 @@ func (karnaLambdaModel *KarnaLambdaModel) pruneVersion(wg *sync.WaitGroup, versi
 	_, err := req.Send(context.Background())
 
 	if err != nil {
-		LogErrorMessage(err.Error())
-
+		logger.Error(err.Error())
 	}
 
 	wg.Done()

@@ -2,27 +2,29 @@ package deploy
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"github.com/karbonn/karna/core"
 	"os"
 	"reflect"
+
+	"github.com/karnalab/karna/core"
 )
 
 const (
 	fileName = "karna.json"
 )
 
-func getConfigFile() (configFile *core.KarnaConfigFile) {
+func getConfigFile() (configFile *core.KarnaConfigFile, err error) {
 	dir, err := os.Getwd()
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		return nil, err
 	}
 
 	data, err := ioutil.ReadFile(dir + "/" + fileName)
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		return nil, err
 	}
 
 	err = json.Unmarshal(data, &configFile)
@@ -30,7 +32,7 @@ func getConfigFile() (configFile *core.KarnaConfigFile) {
 	configFile.Path = dir
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		return nil, err
 	}
 
 	return
@@ -45,12 +47,11 @@ func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployme
 	return
 }
 
-func checkRequirements(deployment *core.KarnaDeployment, alias string) {
+func checkRequirements(deployment *core.KarnaDeployment, alias string) (err error) {
 	requirements := [...]string{"FunctionName", "File", "Aliases", "Src"}
 
 	if deployment.Aliases[alias] == "" {
-		core.LogErrorMessage("Alias do not match with the config file.")
-
+		return fmt.Errorf("alias do not match with the config file")
 	}
 
 	for _, requirement := range requirements {
@@ -60,13 +61,13 @@ func checkRequirements(deployment *core.KarnaDeployment, alias string) {
 		switch a.Type() {
 		case reflect.TypeOf(""):
 			if a.Len() == 0 {
-				core.LogErrorMessage("is missing:" + requirement)
+				return fmt.Errorf("is missing:" + requirement)
 			}
 		case reflect.TypeOf(map[string]string{}):
 			if a.IsNil() {
-				core.LogErrorMessage("is missing:" + requirement)
-
+				return fmt.Errorf("is missing:" + requirement)
 			}
 		}
 	}
+	return
 }

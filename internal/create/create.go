@@ -1,17 +1,16 @@
 package create
 
 import (
-	"github.com/karbonn/karna/core"
 	"os"
 	"time"
 )
 
-func Run(name, functionName, runtime *string) (timeElapsed string) {
+func Run(name, functionName, runtime *string) (timeElapsed string, err error) {
 	startTime := time.Now()
 	dir, err := os.Getwd()
 
 	if err != nil {
-		core.LogErrorMessage(err.Error())
+		return timeElapsed, err
 	}
 
 	folder := dir + "/" + *name
