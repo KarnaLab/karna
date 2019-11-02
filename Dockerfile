@@ -6,4 +6,4 @@ WORKDIR /app
 
 COPY . /app
 
-RUN cd /app && go install 
+RUN cd /app && go mod init && go install 
