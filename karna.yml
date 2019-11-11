@@ -10,7 +10,7 @@ functions:
       bucket:
       key:
     env:
-      variable_a: ${{ TEST }}
+      variable_a: ${ KARNA_ENV }
   - name: avgBis
     input: services
     aliases:

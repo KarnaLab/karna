@@ -87,8 +87,8 @@ type KarnaDeploymentPrune struct {
 }
 
 type KarnaDeploymentS3 struct {
-	Bucket string
-	Key    string
+	Bucket string `mapstructure:"bucket"`
+	Key    string `mapstructure:"key"`
 }
 
 //KarnaDeployment => Karna model for Deployment key in Karna config file.
@@ -99,6 +99,7 @@ type KarnaFunction struct {
 	Aliases map[string]string    `mapstructure:"aliases"`
 	Prune   KarnaDeploymentPrune `mapstructure:"prune"`
 	S3      KarnaDeploymentS3
+	Env     map[string]string `mapstructure:"env"`
 }
 
 type KarnaGlobalConfig struct {

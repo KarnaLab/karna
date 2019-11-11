@@ -10,7 +10,7 @@ const (
 	fileName = "karna.yml"
 )
 
-func getTargetDeployment(config *core.KarnaConfigFile, target, alias *string) (function *core.KarnaFunction, err error) {
+func getTargetFunction(config *core.KarnaConfigFile, target, alias *string) (function *core.KarnaFunction, err error) {
 	for i, f := range config.Functions {
 		if f.Name == *target {
 			function = &config.Functions[i]

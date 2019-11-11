@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -17,19 +18,19 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		return timeElapsed, err
 	}
 
-	targetDeployment, err := getTargetDeployment(config, target, alias)
-
+	targetFunction, err := getTargetFunction(config, target, alias)
+	fmt.Println(targetFunction)
 	if err != nil {
 		return timeElapsed, err
 	}
 
-	var input = config.Path + "/" + targetDeployment.Input
+	var input = config.Path + "/" + targetFunction.Input
 
 	if _, err := os.Stat(input); os.IsNotExist(err) {
 		return timeElapsed, err
 	}
 
-	var output = config.Path + "/.karna/" + targetDeployment.Name + "/" + targetDeployment.Output
+	var output = config.Path + "/.karna/" + targetFunction.Name + "/" + targetFunction.Output
 
 	logger.Log("Building archive...")
 
@@ -37,8 +38,8 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		return timeElapsed, err
 	}
 
-	if targetDeployment.S3.Bucket != "" {
-		if err = core.S3.Upload(targetDeployment, output); err != nil {
+	if targetFunction.S3.Bucket != "" {
+		if err = core.S3.Upload(targetFunction, output); err != nil {
 			return timeElapsed, err
 		}
 	}
@@ -46,7 +47,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	logger.Log("Done")
 	logger.Log("Updating function code...")
 
-	err = core.Lambda.UpdateFunctionCode(targetDeployment, output)
+	err = core.Lambda.UpdateFunctionCode(targetFunction, output)
 
 	if err != nil {
 		return timeElapsed, err
@@ -55,20 +56,20 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	logger.Log("Done")
 	logger.Log("Publishing function...")
 
-	if err = core.Lambda.PublishFunction(targetDeployment); err != nil {
+	if err = core.Lambda.PublishFunction(targetFunction); err != nil {
 		return timeElapsed, err
 	}
 
 	logger.Log("Done")
 
-	if err = core.Lambda.SyncAlias(targetDeployment, *alias); err != nil {
+	if err = core.Lambda.SyncAlias(targetFunction, *alias); err != nil {
 		return timeElapsed, err
 	}
 
 	logger.Log("Done")
 
-	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
-		if err = core.Lambda.Prune(targetDeployment); err != nil {
+	if (targetFunction.Prune.Alias) || (targetFunction.Prune.Keep > 0) {
+		if err = core.Lambda.Prune(targetFunction); err != nil {
 			return timeElapsed, err
 		}
 	}

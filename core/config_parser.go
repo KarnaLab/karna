@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -16,6 +17,8 @@ func GetConfig() (config *KarnaConfigFile, err error) {
 
 	viper.SetConfigName(fileName)
 	viper.AddConfigPath(".")
+	viper.SetEnvPrefix("KARNA")
+	viper.AutomaticEnv()
 
 	if err = viper.ReadInConfig(); err != nil {
 		return
@@ -65,6 +68,7 @@ func checkRequirements(config *KarnaConfigFile) (err error) {
 
 func mergeGlobalConfig(config *KarnaConfigFile) (err error) {
 	dir, err := os.Getwd()
+
 	hasGlobalOutputDefined := viper.IsSet("global.output")
 
 	for i, function := range config.Functions {
@@ -78,6 +82,14 @@ func mergeGlobalConfig(config *KarnaConfigFile) (err error) {
 			return errors.New("Output is missing either in Global config && Function config")
 		}
 		config.Functions[i].Output = config.Global.Output
+
+		for key, env := range function.Env {
+			parsed := strings.ReplaceAll(env, " ", "")
+			parsed = strings.ReplaceAll(parsed, "${", "")
+			parsed = strings.ReplaceAll(parsed, "KARNA_", "")
+			parsed = strings.ReplaceAll(parsed, "}", "")
+			config.Functions[i].Env[key] = viper.GetString(parsed)
+		}
 	}
 
 	config.Path = dir
