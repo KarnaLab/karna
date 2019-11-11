@@ -82,26 +82,34 @@ type KarnaAGWAPI struct {
 
 //KarnaDeploymentPrune => Karna model for Prune option in Karna config file.
 type KarnaDeploymentPrune struct {
-	Alias bool `json:"alias,omitempty"`
-	Keep  int  `json:"keep,omitempty"`
+	Alias bool `mapstructure:"alias"`
+	Keep  int  `mapstructure:"keep"`
+}
+
+type KarnaDeploymentS3 struct {
+	Bucket string
+	Key    string
 }
 
 //KarnaDeployment => Karna model for Deployment key in Karna config file.
-type KarnaDeployment struct {
-	Src          string               `json:"src"`
-	Key          string               `json:"key,omitempty"`
-	File         string               `json:"file"`
-	FunctionName string               `json:"functionName"`
-	Aliases      map[string]string    `json:"aliases,omitempty"`
-	Bucket       string               `json:"bucket,omitempty"`
-	Prune        KarnaDeploymentPrune `json:"prune,omitempty"`
+type KarnaFunction struct {
+	Input   string               `mapstructure:"input"`
+	Output  string               `mapstructure:"output"`
+	Name    string               `mapstructure:"name"`
+	Aliases map[string]string    `mapstructure:"aliases"`
+	Prune   KarnaDeploymentPrune `mapstructure:"prune"`
+	S3      KarnaDeploymentS3
+}
+
+type KarnaGlobalConfig struct {
+	Output string `mapstructure:"output"`
 }
 
 //KarnaConfigFile => Karna model for Karna config file.
 type KarnaConfigFile struct {
-	Global      map[string]string `json:"global"`
-	Deployments []KarnaDeployment `json:"deployments"`
-	Path        string            `json:",omitempty"`
+	Global    KarnaGlobalConfig `mapstructure:"global"`
+	Functions []KarnaFunction   `mapstructure:"functions"`
+	Path      string            `mapstructure:""`
 }
 
 //KarnaQuery => Karna model for Neo4J query.

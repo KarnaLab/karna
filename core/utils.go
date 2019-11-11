@@ -105,9 +105,9 @@ func FindStructInSlice(value string, key string, slice []interface{}) (found boo
 	return
 }
 
-func FindDeployment(value string, deployments []KarnaDeployment) (found bool) {
+func FindDeployment(value string, deployments []KarnaFunction) (found bool) {
 	for _, v := range deployments {
-		if v.FunctionName == value {
+		if v.Name == value {
 			found = true
 		}
 	}

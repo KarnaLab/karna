@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"os"
 	"time"
 
 	"github.com/karnalab/karna/core"
@@ -10,30 +11,33 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	var logger *core.KarnaLogger
 	startTime := time.Now()
 
-	configFile, err := getConfigFile()
+	config, err := core.GetConfig()
 
 	if err != nil {
 		return timeElapsed, err
 	}
 
-	targetDeployment := getTargetDeployment(configFile, target)
+	targetDeployment, err := getTargetDeployment(config, target, alias)
 
-	logger.Log("Checking requirements...")
-
-	checkRequirements(targetDeployment, *alias)
-
-	logger.Log("Done")
-
-	var source = configFile.Path + "/" + targetDeployment.Src
-	var output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias + "/" + targetDeployment.File
-
-	logger.Log("Building archive...")
-
-	if err = zipArchive(source, output); err != nil {
+	if err != nil {
 		return timeElapsed, err
 	}
 
-	if targetDeployment.Bucket != "" {
+	var input = config.Path + "/" + targetDeployment.Input
+
+	if _, err := os.Stat(input); os.IsNotExist(err) {
+		return timeElapsed, err
+	}
+
+	var output = config.Path + "/.karna/" + targetDeployment.Name + "/" + targetDeployment.Output
+
+	logger.Log("Building archive...")
+
+	if err = zipArchive(input, output); err != nil {
+		return timeElapsed, err
+	}
+
+	if targetDeployment.S3.Bucket != "" {
 		if err = core.S3.Upload(targetDeployment, output); err != nil {
 			return timeElapsed, err
 		}
@@ -70,5 +74,6 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	}
 
 	timeElapsed = time.Since(startTime).String()
+
 	return
 }

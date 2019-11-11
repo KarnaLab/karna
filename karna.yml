@@ -1,0 +1,22 @@
+global:
+  output: lambda.zip
+functions:
+  - name: avg
+    input: services
+    aliases:
+      prod: 1
+      dev: fixed@update
+    s3:
+      bucket:
+      key:
+    env:
+      variable_a: ${{ TEST }}
+  - name: avgBis
+    input: services
+    aliases:
+      prod: 8
+      dev: fixed@update
+      test: 9
+    prune:
+      keep: 3
+      alias: false

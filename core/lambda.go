@@ -131,9 +131,9 @@ func (karnaLambdaModel *KarnaLambdaModel) getPolicy(policies chan map[string][]s
 }
 
 //PublishFunction => Expose PublishFunction to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) PublishFunction(deployment *KarnaDeployment) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) PublishFunction(deployment *KarnaFunction) (err error) {
 	input := &lambda.PublishVersionInput{
-		FunctionName: aws.String(deployment.FunctionName),
+		FunctionName: aws.String(deployment.Name),
 	}
 
 	req := karnaLambdaModel.Client.PublishVersionRequest(input)
@@ -144,21 +144,21 @@ func (karnaLambdaModel *KarnaLambdaModel) PublishFunction(deployment *KarnaDeplo
 }
 
 //UpdateFunctionCode => Expose UpdateFunctionCode to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) UpdateFunctionCode(deployment *KarnaDeployment, archivePath string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) UpdateFunctionCode(deployment *KarnaFunction, archivePath string) (err error) {
 	input := &lambda.UpdateFunctionCodeInput{}
 
-	if deployment.Bucket != "" {
+	if deployment.S3.Bucket != "" {
 		input = &lambda.UpdateFunctionCodeInput{
-			FunctionName: aws.String(deployment.FunctionName),
-			S3Bucket:     aws.String(deployment.Bucket),
-			S3Key:        aws.String(deployment.File),
+			FunctionName: aws.String(deployment.Name),
+			S3Bucket:     aws.String(deployment.S3.Bucket),
+			S3Key:        aws.String(deployment.S3.Key),
 			Publish:      aws.Bool(true),
 		}
 	} else {
 		part, _ := ioutil.ReadFile(archivePath)
 
 		input = &lambda.UpdateFunctionCodeInput{
-			FunctionName: aws.String(deployment.FunctionName),
+			FunctionName: aws.String(deployment.Name),
 			Publish:      aws.Bool(true),
 			ZipFile:      part,
 		}
@@ -215,9 +215,9 @@ func (karnaLambdaModel *KarnaLambdaModel) GetAliasesByFunctionName(functionName 
 }
 
 //SyncAlias => Expose SyncAlias to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) SyncAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) SyncAlias(deployment *KarnaFunction, alias string) (err error) {
 
-	aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+	aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.Name)
 
 	if a := findAlias(aliases, alias); a == nil {
 		logger.Log("creation of alias: " + alias)
@@ -230,20 +230,20 @@ func (karnaLambdaModel *KarnaLambdaModel) SyncAlias(deployment *KarnaDeployment,
 	return
 }
 
-func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaFunction, alias string) (err error) {
 	var version string
 
 	if len(deployment.Aliases[alias]) == 0 {
 		version = "$LATEST"
 	} else if deployment.Aliases[alias] == "fixed@update" {
-		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.Name)
 		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
 	}
 
 	input := &lambda.CreateAliasInput{
-		FunctionName:    aws.String(deployment.FunctionName),
+		FunctionName:    aws.String(deployment.Name),
 		Name:            aws.String(alias),
 		FunctionVersion: aws.String(version),
 	}
@@ -255,18 +255,18 @@ func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeploymen
 	return
 }
 
-func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaFunction, alias string) (err error) {
 	var version string
 
 	if deployment.Aliases[alias] == "fixed@update" {
-		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.Name)
 		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
 	}
 
 	input := &lambda.UpdateAliasInput{
-		FunctionName:    aws.String(deployment.FunctionName),
+		FunctionName:    aws.String(deployment.Name),
 		Name:            aws.String(alias),
 		FunctionVersion: aws.String(version),
 	}
@@ -279,9 +279,9 @@ func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeploymen
 }
 
 //Prune => Expose Prune to KarnaLambdaModel. Will remove alias and/or versions.
-func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaFunction) (err error) {
 	if deployment.Prune.Alias {
-		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.Name)
 
 		for _, a := range aliases {
 			if _, ok := deployment.Aliases[*a.Name]; !ok {
@@ -289,7 +289,7 @@ func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (er
 
 				input := &lambda.DeleteAliasInput{
 					Name:         aws.String(*a.Name),
-					FunctionName: aws.String(deployment.FunctionName),
+					FunctionName: aws.String(deployment.Name),
 				}
 
 				req := karnaLambdaModel.Client.DeleteAliasRequest(input)
@@ -303,8 +303,8 @@ func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (er
 		var versionsToPrune []int
 		var versionsToKeep []int
 
-		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
-		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.Name)
+		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.Name)
 
 		for _, alias := range aliases {
 			version, _ := strconv.Atoi(*alias.FunctionVersion)
@@ -344,7 +344,7 @@ func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (er
 
 		for _, version := range versionsToPrune {
 			wg.Add(1)
-			karnaLambdaModel.pruneVersion(&wg, version, deployment.FunctionName)
+			karnaLambdaModel.pruneVersion(&wg, version, deployment.Name)
 		}
 
 		wg.Wait()
