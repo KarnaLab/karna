@@ -24,8 +24,14 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Done")
 
-	var source = configFile.Path + "/" + targetDeployment.Src
-	var output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias + "/" + targetDeployment.File
+	var source = configFile.Path + "/" + targetDeployment.Src + targetDeployment.Executable
+	var output string
+
+	if len(targetDeployment.Executable) > 0 {
+		output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias
+	} else {
+		output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias + "/" + targetDeployment.File
+	}
 
 	logger.Log("Building archive...")
 
