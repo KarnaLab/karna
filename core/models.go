@@ -95,6 +95,7 @@ type KarnaDeployment struct {
 	Aliases      map[string]string    `json:"aliases,omitempty"`
 	Bucket       string               `json:"bucket,omitempty"`
 	Prune        KarnaDeploymentPrune `json:"prune,omitempty"`
+	Executable   string               `json:"executable,omitempty"`
 }
 
 //KarnaConfigFile => Karna model for Karna config file.
