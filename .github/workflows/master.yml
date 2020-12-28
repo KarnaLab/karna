@@ -1,7 +1,8 @@
 name: Release package
 on:
   push:
-    branches: master
+    tags:
+      - v*
 jobs:
   deploy:
     name: Release on ${{ matrix.os }} for version ${{ matrix.go }}
