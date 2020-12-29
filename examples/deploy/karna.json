@@ -7,7 +7,7 @@
       "functionName": "avgTest",
       "aliases": {
         "prod": "8",
-        "dev": "fixed@update",
+        "dev": "fixed",
         "test": "9"
       },
       "prune": {

@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/karnalab/karna/core"
-	"github.com/karnalab/karna/internal/api"
 	"github.com/karnalab/karna/internal/deploy"
 	"github.com/karnalab/karna/internal/viz"
 
@@ -35,24 +34,6 @@ var cmdDeploy = &cobra.Command{
 	},
 }
 
-/*
-var cmdCreate = &cobra.Command{
-	Use:   "create",
-	Short: "Use Karna Create to create your Lambda application.",
-	Long:  `Karna Create will generate a template for your lambda application.`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		core.LogSuccessMessage("Creation in progress...")
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		name, _ := cmd.Flags().GetString("name")
-		functionName, _ := cmd.Flags().GetString("function-name")
-		runtime, _ := cmd.Flags().GetString("runtime")
-
-		elapsed := create.Run(&name, &functionName, &runtime)
-		core.LogSuccessMessage("Completed in " + elapsed)
-	},
-}
-*/
 var cmdViz = &cobra.Command{
 	Use:   "viz [sub]",
 	Short: "Use Karna Viz to build a Lambda tree on Neo4J.",
@@ -104,38 +85,13 @@ var cmdVizCleanup = &cobra.Command{
 	},
 }
 
-var cmdAPI = &cobra.Command{
-	Use:   "api [sub]",
-	Short: "Use Karna API to build a GUI.",
-	Long: `Karna API will start a WebServer which exposes a collection of
-	endpoints to build, interact, vizualize your Lambda architecture.`,
-	Args: cobra.MinimumNArgs(1),
-}
-
-var cmdAPIStart = &cobra.Command{
-	Use:   "start",
-	Short: "Use Karna API to build a GUI.",
-	Long: `Karna API will start a WebServer which exposes a collection of
-	endpoints to build, interact and vizualize your Lambda architecture.`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		logger.Log("Starting API in progress...")
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		api.Run()
-	},
-}
-
 func init() {
 	var target string
 	var alias string
 	var port string
 	var credentials string
 	var host string
-	/*var name string
-	var runtime string
-	var functionName string
-	*/
-	cmdAPI.AddCommand(cmdAPIStart)
+
 	cmdViz.AddCommand(cmdVizShow, cmdVizCleanup)
 
 	cmdDeploy.Flags().StringVarP(&target, "target", "t", "", "Function to deploy (JSON key into your config file)")
@@ -143,14 +99,7 @@ func init() {
 
 	cmdDeploy.MarkFlagRequired("target")
 	cmdDeploy.MarkFlagRequired("alias")
-	/*
-		cmdCreate.Flags().StringVarP(&name, "name", "n", "", "Folder name")
-		cmdCreate.Flags().StringVarP(&runtime, "runtime", "r", "", "Layers runtime")
-		cmdCreate.Flags().StringVarP(&functionName, "function-name", "f", "", "Function name")
 
-		cmdCreate.MarkFlagRequired("name")
-		cmdCreate.MarkFlagRequired("function-name")
-	*/
 	cmdVizShow.Flags().StringVarP(&port, "port", "p", "", "Database port")
 	cmdVizShow.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
 	cmdVizShow.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
@@ -159,7 +108,7 @@ func init() {
 	cmdVizCleanup.Flags().StringVarP(&credentials, "credentials", "c", "", "Credentials for Neo4J database")
 	cmdVizCleanup.Flags().StringVarP(&host, "host", "", "", "Host for Neo4J database")
 
-	rootCmd.AddCommand(cmdDeploy, cmdAPI, cmdViz)
+	rootCmd.AddCommand(cmdDeploy, cmdViz)
 }
 
 //Execute => Will register commands && execute the right one.

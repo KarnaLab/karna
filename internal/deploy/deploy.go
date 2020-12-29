@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/karnalab/karna/core"
@@ -16,13 +17,23 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		return timeElapsed, err
 	}
 
-	targetDeployment := getTargetDeployment(configFile, target)
+	targetDeployment, err := getTargetDeployment(configFile, target)
+
+	if err != nil {
+		return timeElapsed, err
+	}
 
 	logger.Log("Checking requirements...")
 
-	checkRequirements(targetDeployment, *alias)
+	if err = checkRequirements(targetDeployment, *alias); err != nil {
+		return timeElapsed, err
+	}
 
 	logger.Log("Done")
+
+	if _, err = core.Lambda.GetFunctionByFunctionName(targetDeployment.FunctionName); err != nil {
+		return timeElapsed, err
+	}
 
 	var source string
 
@@ -65,6 +76,8 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Done")
 
+	logger.Log("Synchronize alias...")
+
 	if err = core.Lambda.SyncAlias(targetDeployment, *alias); err != nil {
 		return timeElapsed, err
 	}
@@ -72,9 +85,43 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	logger.Log("Done")
 
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
+		logger.Log("Prune versions...")
+
 		if err = core.Lambda.Prune(targetDeployment); err != nil {
 			return timeElapsed, err
 		}
+		logger.Log("Done")
+	}
+
+	if len(targetDeployment.API.ID) > 0 {
+		logger.Log("Deploy to API Gateway...")
+
+		apisTree := core.AGW.BuildAGWTree()
+
+		var currentAPI core.KarnaAGWAPI
+		var currentResource map[string]interface{}
+
+		for _, api := range apisTree {
+			if *api.API.Id == targetDeployment.API.ID {
+				currentAPI = api
+			}
+		}
+
+		if currentAPI.API.Name == nil {
+			return timeElapsed, fmt.Errorf("API not found")
+		}
+
+		for _, resource := range currentAPI.Resources {
+			if resource["Id"] == targetDeployment.API.Resource {
+				currentResource = resource
+			}
+		}
+
+		if currentResource["Id"] == nil {
+			return timeElapsed, fmt.Errorf("Resource not found")
+		}
+
+		logger.Log("Done")
 	}
 
 	timeElapsed = time.Since(startTime).String()

@@ -38,12 +38,17 @@ func getConfigFile() (configFile *core.KarnaConfigFile, err error) {
 	return
 }
 
-func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployment *core.KarnaDeployment) {
+func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployment *core.KarnaDeployment, err error) {
 	for _, d := range config.Deployments {
 		if d.FunctionName == *target {
 			deployment = &d
 		}
 	}
+
+	if deployment == nil {
+		err = fmt.Errorf("Deployment not found in config file")
+	}
+
 	return
 }
 

@@ -1,0 +1,18 @@
+{
+  "global": {},
+  "deployments": [
+    {
+      "src": "services",
+      "file": "lambda.zip",
+      "functionName": "test",
+      "aliases": {
+        "production": "8",
+        "developpement": "fixed"
+      },
+      "api": {
+        "id": "hfe21vtwne",
+        "resource": "test"
+      }
+    }
+  ]
+}

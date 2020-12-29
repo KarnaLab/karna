@@ -172,14 +172,14 @@ func (karnaLambdaModel *KarnaLambdaModel) UpdateFunctionCode(deployment *KarnaDe
 }
 
 //GetFunctionByFunctionName => Expose GetFunctionByFunctionName to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) GetFunctionByFunctionName(functionName string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) GetFunctionByFunctionName(functionName string) (result *lambda.GetFunctionConfigurationResponse, err error) {
 	input := &lambda.GetFunctionConfigurationInput{
 		FunctionName: aws.String(functionName),
 	}
 
 	req := karnaLambdaModel.Client.GetFunctionConfigurationRequest(input)
 
-	_, err = req.Send(context.Background())
+	result, err = req.Send(context.Background())
 
 	return
 }
@@ -235,7 +235,7 @@ func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeploymen
 
 	if len(deployment.Aliases[alias]) == 0 {
 		version = "$LATEST"
-	} else if deployment.Aliases[alias] == "fixed@update" {
+	} else if deployment.Aliases[alias] == "fixed" {
 		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
 		version = *versions[len(versions)-1].Version
 	} else {
@@ -258,7 +258,7 @@ func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeploymen
 func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeployment, alias string) (err error) {
 	var version string
 
-	if deployment.Aliases[alias] == "fixed@update" {
+	if deployment.Aliases[alias] == "fixed" {
 		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
 		version = *versions[len(versions)-1].Version
 	} else {
