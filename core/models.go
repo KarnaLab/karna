@@ -87,8 +87,9 @@ type KarnaDeploymentPrune struct {
 }
 
 type KarnaAPIDeployment struct {
-	ID       string `json:"id,omitempty"`
-	Resource string `json:"resource,omitempty"`
+	ID         string `json:"id,omitempty"`
+	Resource   string `json:"resource,omitempty"`
+	HTTPMethod string `json:"httpMethod,omitempty"`
 }
 
 //KarnaDeployment => Karna model for Deployment key in Karna config file.

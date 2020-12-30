@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/karnalab/karna/core"
@@ -121,6 +122,29 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			return timeElapsed, fmt.Errorf("Resource not found")
 		}
 
+		integration, err := core.AGW.GetIntegration(targetDeployment.API.ID, targetDeployment.API.Resource, targetDeployment.API.HTTPMethod)
+
+		if err != nil {
+			return timeElapsed, err
+		}
+
+		index := strings.Index(*integration.Uri, "${stageVariables.lambdaAlias}")
+
+		if index == -1 {
+			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify ${stageVariable.lambdaAlias}")
+		}
+
+		stage, err := core.AGW.GetStage(targetDeployment.API.ID, *alias)
+
+		if err != nil {
+			// TODO: If error is not found, create Alias
+			return timeElapsed, err
+		}
+
+		if stage.Variables["lambdaAlias"] == "production" {
+			// Create stage
+		}
+		fmt.Println(stage)
 		logger.Log("Done")
 	}
 

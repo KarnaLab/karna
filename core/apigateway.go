@@ -158,3 +158,38 @@ func (karnaAGW *KarnaAPIGatewayModel) getBasePathMappings(domainName apigateway.
 
 	return
 }
+
+func (karnaAGW *KarnaAPIGatewayModel) GetIntegration(APIID, resourceID, httpMethod string) (result *apigateway.GetIntegrationResponse, err error) {
+	input := &apigateway.GetIntegrationInput{RestApiId: aws.String(APIID), ResourceId: aws.String(resourceID), HttpMethod: aws.String(httpMethod)}
+
+	req := karnaAGW.Client.GetIntegrationRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
+
+func (karnaAGW *KarnaAPIGatewayModel) GetStage(APIID, stage string) (result *apigateway.GetStageResponse, err error) {
+	input := &apigateway.GetStageInput{RestApiId: aws.String(APIID), StageName: aws.String(stage)}
+
+	req := karnaAGW.Client.GetStageRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
+
+func (karnaAGW *KarnaAPIGatewayModel) UpdateStage(APIID, stage, alias string) (result *apigateway.UpdateStageResponse, err error) {
+	var updatedValues = apigateway.PatchOperation{
+		Op:    apigateway.OpReplace,
+		Path:  aws.String("/variables/lambdaAlias"),
+		Value: aws.String(alias),
+	}
+	input := &apigateway.UpdateStageInput{RestApiId: aws.String(APIID), StageName: aws.String(stage), PatchOperations: []apigateway.PatchOperation{updatedValues}}
+
+	req := karnaAGW.Client.UpdateStageRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}

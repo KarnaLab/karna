@@ -11,7 +11,8 @@
       },
       "api": {
         "id": "hfe21vtwne",
-        "resource": "test"
+        "resource": "mgisio",
+        "httpMethod": "GET"
       }
     }
   ]
