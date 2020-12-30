@@ -96,6 +96,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	if len(targetDeployment.API.ID) > 0 {
 		logger.Log("Deploy to API Gateway...")
+		var shouldReDeploy bool
 
 		apisTree := core.AGW.BuildAGWTree()
 
@@ -134,17 +135,32 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify ${stageVariable.lambdaAlias}")
 		}
 
-		stage, err := core.AGW.GetStage(targetDeployment.API.ID, *alias)
+		stage, notFound, err := core.AGW.GetStage(targetDeployment.API.ID, *alias)
 
 		if err != nil {
-			// TODO: If error is not found, create Alias
+			if notFound {
+				shouldReDeploy = true
+				if _, err = core.AGW.CreateStage(targetDeployment.API.ID, *alias, "1tbqsq"); err != nil {
+					return timeElapsed, err
+				}
+			}
+
 			return timeElapsed, err
 		}
 
-		if stage.Variables["lambdaAlias"] == "production" {
-			// Create stage
+		if stage.Variables["lambdaAlias"] == "" || stage.Variables["lamdaAlias"] != *alias {
+			updated, err := core.AGW.UpdateStage(targetDeployment.API.ID, *alias)
+
+			if err != nil {
+				return timeElapsed, err
+			}
+			fmt.Println(updated)
 		}
-		fmt.Println(stage)
+
+		if shouldReDeploy {
+			// Redeploy API
+		}
+
 		logger.Log("Done")
 	}
 
