@@ -219,3 +219,17 @@ func (karnaAGW *KarnaAPIGatewayModel) CreateStage(APIID, stageName, deploymentID
 
 	return
 }
+
+func (karnaAGW *KarnaAPIGatewayModel) CreateDeployment(APIID, stageName string) (result *apigateway.CreateDeploymentResponse, err error) {
+	input := &apigateway.CreateDeploymentInput{
+		RestApiId:   aws.String(APIID),
+		StageName:   aws.String(stageName),
+		Description: aws.String("Deployment for stage " + stageName + " created by Karna"),
+	}
+
+	req := karnaAGW.Client.CreateDeploymentRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}

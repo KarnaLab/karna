@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
@@ -370,4 +371,19 @@ func (karnaLambdaModel *KarnaLambdaModel) pruneVersion(wg *sync.WaitGroup, versi
 	}
 
 	wg.Done()
+}
+
+func (karnaLambdaModel *KarnaLambdaModel) AddPermission(functionName, alias string) (result *lambda.AddPermissionResponse, err error) {
+	input := &lambda.AddPermissionInput{
+		FunctionName: aws.String(functionName + ":" + alias),
+		Action:       aws.String("lambda:InvokeFunction"),
+		Principal:    aws.String("apigateway.amazonaws.com"),
+		StatementId:  aws.String(strconv.Itoa(int(time.Now().UnixNano()))),
+	}
+
+	req := karnaLambdaModel.Client.AddPermissionRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
 }

@@ -143,23 +143,41 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 				if _, err = core.AGW.CreateStage(targetDeployment.API.ID, *alias, "1tbqsq"); err != nil {
 					return timeElapsed, err
 				}
-			}
 
-			return timeElapsed, err
+				if _, err = core.Lambda.AddPermission(targetDeployment.FunctionName, *alias); err != nil {
+					return timeElapsed, err
+				}
+
+				stage, _, err = core.AGW.GetStage(targetDeployment.API.ID, *alias)
+
+				if err != nil {
+					return timeElapsed, err
+				}
+
+			} else {
+				return timeElapsed, err
+			}
 		}
 
 		if stage.Variables["lambdaAlias"] == "" || stage.Variables["lamdaAlias"] != *alias {
-			updated, err := core.AGW.UpdateStage(targetDeployment.API.ID, *alias)
+			_, err := core.AGW.UpdateStage(targetDeployment.API.ID, *alias)
 
 			if err != nil {
 				return timeElapsed, err
 			}
-			fmt.Println(updated)
 		}
+		fmt.Println(shouldReDeploy)
 
 		if shouldReDeploy {
 			// Redeploy API
+			_, err := core.AGW.CreateDeployment(targetDeployment.API.ID, *alias)
+
+			if err != nil {
+				return timeElapsed, err
+			}
 		}
+
+		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + core.AGW.Client.Region + ".amazonaws.com/" + *alias + currentResource["Path"].(string))
 
 		logger.Log("Done")
 	}
