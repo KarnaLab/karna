@@ -53,5 +53,5 @@ You can map the alias with the following options:
 
 - a string that corresponds to an existing version
 - "latest" will tag the alias on the \$LATEST version
-- "fixed@update": tag the alias on the LAST version that the user is deploying and not on the \$LATEST version. It
+- "fixed": tag the alias on the LAST version that the user is deploying and not on the \$LATEST version. It
   prevents other deployments from overwriting the current version on which the alias is placed.

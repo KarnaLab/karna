@@ -86,6 +86,12 @@ type KarnaDeploymentPrune struct {
 	Keep  int  `json:"keep,omitempty"`
 }
 
+type KarnaAPIDeployment struct {
+	ID         string `json:"id,omitempty"`
+	Resource   string `json:"resource,omitempty"`
+	HTTPMethod string `json:"httpMethod,omitempty"`
+}
+
 //KarnaDeployment => Karna model for Deployment key in Karna config file.
 type KarnaDeployment struct {
 	Src          string               `json:"src"`
@@ -96,6 +102,7 @@ type KarnaDeployment struct {
 	Bucket       string               `json:"bucket,omitempty"`
 	Prune        KarnaDeploymentPrune `json:"prune,omitempty"`
 	Executable   string               `json:"executable,omitempty"`
+	API          KarnaAPIDeployment   `json:"api,omitempty"`
 }
 
 //KarnaConfigFile => Karna model for Karna config file.

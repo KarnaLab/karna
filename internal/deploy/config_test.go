@@ -69,7 +69,7 @@ func TestGetConfigFileWithConfigFile(t *testing.T) {
 		File:         "lambda.zip",
 		FunctionName: functionName,
 		Aliases: map[string]string{
-			"dev":  "fixed@update",
+			"dev":  "fixed",
 			"prod": "1",
 		},
 	}
@@ -93,7 +93,7 @@ func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
 		File:         "lambda.zip",
 		FunctionName: "functionName",
 		Aliases: map[string]string{
-			"dev":  "fixed@update",
+			"dev":  "fixed",
 			"prod": "1",
 		},
 	}
