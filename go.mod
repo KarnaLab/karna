@@ -21,4 +21,4 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 )
 
-replace github.com/karnalab/karna v1.3.0 => ./../karna
+replace github.com/karnalab/karna v1.3.1 => ./../karna
