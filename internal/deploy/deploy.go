@@ -96,8 +96,6 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	if len(targetDeployment.API.ID) > 0 {
 		logger.Log("Deploy to API Gateway...")
-		var shouldReDeploy bool
-
 		apisTree := core.AGW.BuildAGWTree()
 
 		var currentAPI core.KarnaAGWAPI
@@ -139,8 +137,10 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 		if err != nil {
 			if notFound {
-				shouldReDeploy = true
-				if _, err = core.AGW.CreateStage(targetDeployment.API.ID, *alias, "1tbqsq"); err != nil {
+
+				_, err := core.AGW.CreateDeployment(targetDeployment.API.ID, *alias)
+
+				if err != nil {
 					return timeElapsed, err
 				}
 
@@ -161,16 +161,6 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 		if stage.Variables["lambdaAlias"] == "" || stage.Variables["lamdaAlias"] != *alias {
 			_, err := core.AGW.UpdateStage(targetDeployment.API.ID, *alias)
-
-			if err != nil {
-				return timeElapsed, err
-			}
-		}
-		fmt.Println(shouldReDeploy)
-
-		if shouldReDeploy {
-			// Redeploy API
-			_, err := core.AGW.CreateDeployment(targetDeployment.API.ID, *alias)
 
 			if err != nil {
 				return timeElapsed, err

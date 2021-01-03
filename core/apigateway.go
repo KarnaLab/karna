@@ -225,6 +225,9 @@ func (karnaAGW *KarnaAPIGatewayModel) CreateDeployment(APIID, stageName string) 
 		RestApiId:   aws.String(APIID),
 		StageName:   aws.String(stageName),
 		Description: aws.String("Deployment for stage " + stageName + " created by Karna"),
+		Variables: map[string]string{
+			"lambdaAlias": stageName,
+		},
 	}
 
 	req := karnaAGW.Client.CreateDeploymentRequest(input)
