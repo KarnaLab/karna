@@ -1,4 +1,4 @@
-package core
+package deploy
 
 import (
 	"context"
@@ -9,6 +9,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
 )
+
+type KarnaS3Model struct {
+	Client *s3.Client
+}
 
 func (KarnaS3Model *KarnaS3Model) init() {
 	cfg, err := external.LoadDefaultAWSConfig()

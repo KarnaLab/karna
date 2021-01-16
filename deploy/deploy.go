@@ -4,12 +4,21 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/karnalab/karna/core"
 )
 
+var lambdaModel KarnaLambdaModel
+var agwModel KarnaAPIGatewayModel
+var s3Model KarnaS3Model
+
+func init() {
+	lambdaModel.init()
+	agwModel.init()
+	s3Model.init()
+}
+
 func Run(target, alias *string) (timeElapsed string, err error) {
-	var logger *core.KarnaLogger
+	var logger KarnaLogger
+
 	startTime := time.Now()
 
 	configFile, err := getConfigFile()
@@ -32,7 +41,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Done")
 
-	if _, err = core.Lambda.GetFunctionByFunctionName(targetDeployment.FunctionName); err != nil {
+	if _, err = lambdaModel.GetFunctionByFunctionName(targetDeployment.FunctionName); err != nil {
 		return timeElapsed, err
 	}
 
@@ -54,7 +63,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	}
 
 	if targetDeployment.Bucket != "" {
-		if err = core.S3.Upload(targetDeployment, output); err != nil {
+		if err = s3Model.Upload(targetDeployment, output); err != nil {
 			return timeElapsed, err
 		}
 	}
@@ -62,7 +71,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	logger.Log("Done")
 	logger.Log("Updating function code...")
 
-	err = core.Lambda.UpdateFunctionCode(targetDeployment, output)
+	err = lambdaModel.UpdateFunctionCode(targetDeployment, output)
 
 	if err != nil {
 		return timeElapsed, err
@@ -71,7 +80,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	logger.Log("Done")
 	logger.Log("Publishing function...")
 
-	if err = core.Lambda.PublishFunction(targetDeployment); err != nil {
+	if err = lambdaModel.PublishFunction(targetDeployment); err != nil {
 		return timeElapsed, err
 	}
 
@@ -79,7 +88,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Synchronize alias...")
 
-	if err = core.Lambda.SyncAlias(targetDeployment, *alias); err != nil {
+	if err = lambdaModel.SyncAlias(targetDeployment, *alias); err != nil {
 		return timeElapsed, err
 	}
 
@@ -88,7 +97,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
 		logger.Log("Prune versions...")
 
-		if err = core.Lambda.Prune(targetDeployment); err != nil {
+		if err = lambdaModel.Prune(targetDeployment); err != nil {
 			return timeElapsed, err
 		}
 		logger.Log("Done")
@@ -96,59 +105,49 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	if len(targetDeployment.API.ID) > 0 {
 		logger.Log("Deploy to API Gateway...")
-		apisTree := core.AGW.BuildAGWTree()
 
-		var currentAPI core.KarnaAGWAPI
 		var currentResource map[string]interface{}
 
-		for _, api := range apisTree {
-			if *api.API.Id == targetDeployment.API.ID {
-				currentAPI = api
-			}
-		}
-
-		if currentAPI.API.Name == nil {
-			return timeElapsed, fmt.Errorf("API not found")
-		}
-
-		for _, resource := range currentAPI.Resources {
-			if resource["Id"] == targetDeployment.API.Resource {
-				currentResource = resource
-			}
-		}
-
-		if currentResource["Id"] == nil {
-			return timeElapsed, fmt.Errorf("Resource not found")
-		}
-
-		integration, err := core.AGW.GetIntegration(targetDeployment.API.ID, targetDeployment.API.Resource, targetDeployment.API.HTTPMethod)
+		_, err := agwModel.GetRESTAPI(targetDeployment.API.ID)
 
 		if err != nil {
 			return timeElapsed, err
 		}
 
-		index := strings.Index(*integration.Uri, "${stageVariables.lambdaAlias}")
+		_, err = agwModel.GetResource(targetDeployment.API.ID, targetDeployment.API.Resource)
 
-		if index == -1 {
-			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify ${stageVariable.lambdaAlias}")
+		if err != nil {
+			return timeElapsed, err
 		}
 
-		stage, notFound, err := core.AGW.GetStage(targetDeployment.API.ID, *alias)
+		integration, err := agwModel.GetIntegration(targetDeployment.API.ID, targetDeployment.API.Resource, targetDeployment.API.HTTPMethod)
+
+		if err != nil {
+			return timeElapsed, err
+		}
+
+		index := strings.Index(*integration.Uri, "${stageVariables.lambdaModelAlias}")
+
+		if index == -1 {
+			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify ${stageVariable.lambdaModelAlias}")
+		}
+
+		stage, notFound, err := agwModel.GetStage(targetDeployment.API.ID, *alias)
 
 		if err != nil {
 			if notFound {
 
-				_, err := core.AGW.CreateDeployment(targetDeployment.API.ID, *alias)
+				_, err := agwModel.CreateDeployment(targetDeployment.API.ID, *alias)
 
 				if err != nil {
 					return timeElapsed, err
 				}
 
-				if _, err = core.Lambda.AddPermission(targetDeployment.FunctionName, *alias); err != nil {
+				if _, err = lambdaModel.AddPermission(targetDeployment.FunctionName, *alias); err != nil {
 					return timeElapsed, err
 				}
 
-				stage, _, err = core.AGW.GetStage(targetDeployment.API.ID, *alias)
+				stage, _, err = agwModel.GetStage(targetDeployment.API.ID, *alias)
 
 				if err != nil {
 					return timeElapsed, err
@@ -159,15 +158,15 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			}
 		}
 
-		if stage.Variables["lambdaAlias"] == "" || stage.Variables["lamdaAlias"] != *alias {
-			_, err := core.AGW.UpdateStage(targetDeployment.API.ID, *alias)
+		if stage.Variables["lambdaModelAlias"] == "" || stage.Variables["lamdaAlias"] != *alias {
+			_, err := agwModel.UpdateStage(targetDeployment.API.ID, *alias)
 
 			if err != nil {
 				return timeElapsed, err
 			}
 		}
 
-		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + core.AGW.Client.Region + ".amazonaws.com/" + *alias + currentResource["Path"].(string))
+		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + currentResource["Path"].(string))
 
 		logger.Log("Done")
 	}

@@ -1,48 +1,8 @@
-package core
+package deploy
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/apigateway"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
-
-//KarnaLambdaModel => Karna API for Lambda.
-type KarnaLambdaModel struct {
-	Client *lambda.Client
-}
-
-//KarnaAPIGatewayModel => Karna API for APIGateway.
-type KarnaAPIGatewayModel struct {
-	Client *apigateway.Client
-}
-
-//KarnaEC2Model => Karna API for EC2.
-type KarnaEC2Model struct {
-	Client *ec2.Client
-}
-
-//KarnaS3Model => Karna API for S3.
-type KarnaS3Model struct {
-	Client *s3.Client
-}
-
-//KarnaEC2 => Karna model for EC2.
-type KarnaEC2 struct {
-	Instances      []ec2.Instance
-	SecurityGroups []ec2.SecurityGroup
-	Subnets        []ec2.Subnet
-	VPCS           []string
-}
-
-//KarnaLambda => Karna model for Lambda.
-type KarnaLambda struct {
-	FunctionConfiguration lambda.FunctionConfiguration
-	Layers                []lambda.Layer
-	VPC                   string
-	Versions              []lambda.FunctionConfiguration
-	Policy                map[string][]string
-}
 
 type awsPolicyStatementCondition struct {
 	ArnLike map[string]string
@@ -110,25 +70,4 @@ type KarnaConfigFile struct {
 	Global      map[string]string `json:"global"`
 	Deployments []KarnaDeployment `json:"deployments"`
 	Path        string            `json:",omitempty"`
-}
-
-//KarnaQuery => Karna model for Neo4J query.
-type KarnaQuery struct {
-	Queries     []string
-	QueriesChan chan []string
-	Args        []map[string]interface{}
-	ArgsChan    chan []map[string]interface{}
-}
-
-//KarnaNeo4JConfiguration => Karna model for Neo4J configuration.
-type KarnaNeo4JConfiguration struct {
-	Username string
-	Password string
-	Port     string
-	Host     string
-}
-
-//KarnaNeo4J => Karna model for Neo4J.
-type KarnaNeo4J struct {
-	Configuration KarnaNeo4JConfiguration
 }

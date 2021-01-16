@@ -6,15 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
-
-	"github.com/karnalab/karna/core"
 )
 
 const (
 	fileName = "karna.json"
 )
 
-func getConfigFile() (configFile *core.KarnaConfigFile, err error) {
+func getConfigFile() (configFile *KarnaConfigFile, err error) {
 	dir, err := os.Getwd()
 
 	if err != nil {
@@ -38,7 +36,7 @@ func getConfigFile() (configFile *core.KarnaConfigFile, err error) {
 	return
 }
 
-func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployment *core.KarnaDeployment, err error) {
+func getTargetDeployment(config *KarnaConfigFile, target *string) (deployment *KarnaDeployment, err error) {
 	for _, d := range config.Deployments {
 		if d.FunctionName == *target {
 			deployment = &d
@@ -52,7 +50,7 @@ func getTargetDeployment(config *core.KarnaConfigFile, target *string) (deployme
 	return
 }
 
-func checkRequirements(deployment *core.KarnaDeployment, alias string) (err error) {
+func checkRequirements(deployment *KarnaDeployment, alias string) (err error) {
 	requirements := [...]string{"FunctionName", "File", "Aliases", "Src"}
 
 	if deployment.Aliases[alias] == "" {

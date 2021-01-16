@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/karnalab/karna/core"
 )
 
 const (
@@ -15,7 +13,7 @@ const (
 
 func TestCheckRequirementsWithValidInputs(t *testing.T) {
 	alias := "dev"
-	deploymentTest := core.KarnaDeployment{
+	deploymentTest := KarnaDeployment{
 		Src:          "src",
 		Key:          "key",
 		File:         "file",
@@ -35,7 +33,7 @@ func TestCheckRequirementsWithValidInputs(t *testing.T) {
 
 func TestCheckRequirementsWithInvalidInputs(t *testing.T) {
 	alias := "wrongAlias"
-	deploymentTest := core.KarnaDeployment{
+	deploymentTest := KarnaDeployment{
 		Src:          "src",
 		Key:          "key",
 		File:         "file",
@@ -64,7 +62,7 @@ func TestGetConfigFileWithoutConfigFile(t *testing.T) {
 
 func TestGetConfigFileWithConfigFile(t *testing.T) {
 	functionName := "test"
-	deployment := &core.KarnaDeployment{
+	deployment := &KarnaDeployment{
 		Src:          functionName,
 		File:         "lambda.zip",
 		FunctionName: functionName,
@@ -88,7 +86,7 @@ func TestGetConfigFileWithConfigFile(t *testing.T) {
 }
 
 func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
-	deployment := core.KarnaDeployment{
+	deployment := KarnaDeployment{
 		Src:          "functionName",
 		File:         "lambda.zip",
 		FunctionName: "functionName",
@@ -97,12 +95,12 @@ func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
 			"prod": "1",
 		},
 	}
-	config := core.KarnaConfigFile{
+	config := KarnaConfigFile{
 		Global:      map[string]string{},
-		Deployments: []core.KarnaDeployment{deployment},
+		Deployments: []KarnaDeployment{deployment},
 	}
 	target := "functionName"
-	targetDeployment := getTargetDeployment(&config, &target)
+	targetDeployment, _ := getTargetDeployment(&config, &target)
 
 	if len(targetDeployment.Src) > 0 {
 		t.Log("getTargetDeployment PASSED because it must find the deployment with the right target")
