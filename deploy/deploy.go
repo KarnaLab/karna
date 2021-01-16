@@ -106,15 +106,13 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	if len(targetDeployment.API.ID) > 0 {
 		logger.Log("Deploy to API Gateway...")
 
-		var currentResource map[string]interface{}
-
 		_, err := agwModel.GetRESTAPI(targetDeployment.API.ID)
 
 		if err != nil {
 			return timeElapsed, err
 		}
 
-		_, err = agwModel.GetResource(targetDeployment.API.ID, targetDeployment.API.Resource)
+		currentResource, err := agwModel.GetResource(targetDeployment.API.ID, targetDeployment.API.Resource)
 
 		if err != nil {
 			return timeElapsed, err
@@ -126,10 +124,10 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			return timeElapsed, err
 		}
 
-		index := strings.Index(*integration.Uri, "${stageVariables.lambdaModelAlias}")
+		index := strings.Index(*integration.Uri, "${stageVariables.lambdaAlias}")
 
 		if index == -1 {
-			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify ${stageVariable.lambdaModelAlias}")
+			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify <function-name>:${stageVariables.lambdaAlias}")
 		}
 
 		stage, notFound, err := agwModel.GetStage(targetDeployment.API.ID, *alias)
@@ -166,7 +164,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			}
 		}
 
-		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + currentResource["Path"].(string))
+		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + *currentResource.Path)
 
 		logger.Log("Done")
 	}
