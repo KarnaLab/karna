@@ -4,27 +4,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/apigateway"
 )
 
-type awsPolicyStatementCondition struct {
-	ArnLike map[string]string
-}
-type awsPolicyStatementPrincipal struct {
-	Service string
-}
-type awsPolicyStatement struct {
-	Action    string
-	Effect    string
-	Resource  string
-	ID        string `json:"$id"`
-	Condition awsPolicyStatementCondition
-	Principal awsPolicyStatementPrincipal
-}
-
-type awsPolicy struct {
-	Version   string
-	ID        string
-	Statement []awsPolicyStatement
-}
-
 //KarnaAGWStage => Karna model for APIGateway Stage.
 type KarnaAGWStage struct {
 	Name         string

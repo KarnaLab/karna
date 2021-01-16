@@ -69,7 +69,7 @@ func (karnaLambdaModel *KarnaLambdaModel) UpdateFunctionCode(deployment *KarnaDe
 }
 
 //GetFunctionByFunctionName => Expose GetFunctionByFunctionName to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) GetFunctionByFunctionName(functionName string) (result *lambda.GetFunctionConfigurationResponse, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) getFunctionByFunctionName(functionName string) (result *lambda.GetFunctionConfigurationResponse, err error) {
 	input := &lambda.GetFunctionConfigurationInput{
 		FunctionName: aws.String(functionName),
 	}
@@ -82,7 +82,7 @@ func (karnaLambdaModel *KarnaLambdaModel) GetFunctionByFunctionName(functionName
 }
 
 //GetVersionsByFunction => Expose GetVersionsByFunction to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) GetVersionsByFunction(functionName string) (versions []lambda.FunctionConfiguration, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) getVersionsByFunction(functionName string) (versions []lambda.FunctionConfiguration, err error) {
 	input := &lambda.ListVersionsByFunctionInput{
 		FunctionName: aws.String(functionName),
 	}
@@ -97,7 +97,7 @@ func (karnaLambdaModel *KarnaLambdaModel) GetVersionsByFunction(functionName str
 }
 
 //GetAliasesByFunctionName => Expose GetAliasesByFunctionName to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) GetAliasesByFunctionName(functionName string) (aliases []lambda.AliasConfiguration, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) getAliasesByFunctionName(functionName string) (aliases []lambda.AliasConfiguration, err error) {
 	input := &lambda.ListAliasesInput{
 		FunctionName: aws.String(functionName),
 	}
@@ -112,9 +112,9 @@ func (karnaLambdaModel *KarnaLambdaModel) GetAliasesByFunctionName(functionName 
 }
 
 //SyncAlias => Expose SyncAlias to KarnaLambdaModel.
-func (karnaLambdaModel *KarnaLambdaModel) SyncAlias(deployment *KarnaDeployment, alias string) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) syncAlias(deployment *KarnaDeployment, alias string) (err error) {
 
-	aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+	aliases, _ := karnaLambdaModel.getAliasesByFunctionName(deployment.FunctionName)
 
 	if a := findAlias(aliases, alias); a == nil {
 		logger.Log("creation of alias: " + alias)
@@ -133,7 +133,7 @@ func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeploymen
 	if len(deployment.Aliases[alias]) == 0 {
 		version = "$LATEST"
 	} else if deployment.Aliases[alias] == "fixed" {
-		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.getVersionsByFunction(deployment.FunctionName)
 		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
@@ -156,7 +156,7 @@ func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeploymen
 	var version string
 
 	if deployment.Aliases[alias] == "fixed" {
-		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.getVersionsByFunction(deployment.FunctionName)
 		version = *versions[len(versions)-1].Version
 	} else {
 		version = deployment.Aliases[alias]
@@ -176,9 +176,9 @@ func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeploymen
 }
 
 //Prune => Expose Prune to KarnaLambdaModel. Will remove alias and/or versions.
-func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (err error) {
+func (karnaLambdaModel *KarnaLambdaModel) prune(deployment *KarnaDeployment) (err error) {
 	if deployment.Prune.Alias {
-		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+		aliases, _ := karnaLambdaModel.getAliasesByFunctionName(deployment.FunctionName)
 
 		for _, a := range aliases {
 			if _, ok := deployment.Aliases[*a.Name]; !ok {
@@ -200,8 +200,8 @@ func (karnaLambdaModel *KarnaLambdaModel) Prune(deployment *KarnaDeployment) (er
 		var versionsToPrune []int
 		var versionsToKeep []int
 
-		versions, _ := karnaLambdaModel.GetVersionsByFunction(deployment.FunctionName)
-		aliases, _ := karnaLambdaModel.GetAliasesByFunctionName(deployment.FunctionName)
+		versions, _ := karnaLambdaModel.getVersionsByFunction(deployment.FunctionName)
+		aliases, _ := karnaLambdaModel.getAliasesByFunctionName(deployment.FunctionName)
 
 		for _, alias := range aliases {
 			version, _ := strconv.Atoi(*alias.FunctionVersion)
@@ -269,7 +269,7 @@ func (karnaLambdaModel *KarnaLambdaModel) pruneVersion(wg *sync.WaitGroup, versi
 	wg.Done()
 }
 
-func (karnaLambdaModel *KarnaLambdaModel) AddPermission(functionName, alias string) (result *lambda.AddPermissionResponse, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) addPermission(functionName, alias string) (result *lambda.AddPermissionResponse, err error) {
 	input := &lambda.AddPermissionInput{
 		FunctionName: aws.String(functionName + ":" + alias),
 		Action:       aws.String("lambda:InvokeFunction"),

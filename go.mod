@@ -10,6 +10,8 @@ require (
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/graphql-go/graphql v0.7.8
+	github.com/hashicorp/hcl v1.0.0
+	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/johnnadratowski/golang-neo4j-bolt-driver v0.0.0-20181101021923-6b24c0085aae
 	github.com/logrusorgru/aurora v0.0.0-20191017060258-dc85c304c434
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
@@ -17,6 +19,7 @@ require (
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/spf13/cobra v0.0.5
+	github.com/spf13/viper v1.7.1
 	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 )

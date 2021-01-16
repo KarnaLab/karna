@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/apigateway"
 )
 
 var lambdaModel KarnaLambdaModel
@@ -41,7 +43,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Done")
 
-	if _, err = lambdaModel.GetFunctionByFunctionName(targetDeployment.FunctionName); err != nil {
+	if _, err = lambdaModel.getFunctionByFunctionName(targetDeployment.FunctionName); err != nil {
 		return timeElapsed, err
 	}
 
@@ -63,7 +65,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	}
 
 	if targetDeployment.Bucket != "" {
-		if err = s3Model.Upload(targetDeployment, output); err != nil {
+		if err = s3Model.upload(targetDeployment, output); err != nil {
 			return timeElapsed, err
 		}
 	}
@@ -88,7 +90,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Synchronize alias...")
 
-	if err = lambdaModel.SyncAlias(targetDeployment, *alias); err != nil {
+	if err = lambdaModel.syncAlias(targetDeployment, *alias); err != nil {
 		return timeElapsed, err
 	}
 
@@ -97,7 +99,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
 		logger.Log("Prune versions...")
 
-		if err = lambdaModel.Prune(targetDeployment); err != nil {
+		if err = lambdaModel.prune(targetDeployment); err != nil {
 			return timeElapsed, err
 		}
 		logger.Log("Done")
@@ -106,20 +108,52 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	if len(targetDeployment.API.ID) > 0 {
 		logger.Log("Deploy to API Gateway...")
 
-		_, err := agwModel.GetRESTAPI(targetDeployment.API.ID)
+		_, err := agwModel.getRESTAPI(targetDeployment.API.ID)
 
 		if err != nil {
 			return timeElapsed, err
 		}
 
-		currentResource, err := agwModel.GetResource(targetDeployment.API.ID, targetDeployment.API.Resource)
+		var currentResource string
+		var parentResource apigateway.Resource
+
+		resources, err := agwModel.getResources(targetDeployment.API.ID)
 
 		if err != nil {
 			return timeElapsed, err
 		}
 
-		integration, err := agwModel.GetIntegration(targetDeployment.API.ID, targetDeployment.API.Resource, targetDeployment.API.HTTPMethod)
+		for _, resource := range resources.Items {
+			if *resource.Path == "/"+targetDeployment.API.Resource {
+				currentResource = *resource.Id
+			}
+			if *resource.Path == "/" {
+				parentResource = resource
+			}
+		}
 
+		if currentResource == "" {
+			logger.Log("Resource do not exists, try to create it...")
+			resource, err := agwModel.createResource(targetDeployment.API.ID, *parentResource.Id, targetDeployment.API.Resource)
+
+			currentResource = *resource.Id
+
+			if err != nil {
+				return timeElapsed, err
+			}
+			logger.Log("Resource created!")
+
+			logger.Log("Try to create method into resource...")
+			_, err = agwModel.putMethod(targetDeployment.API.ID, *resource.Id, targetDeployment.API.HTTPMethod)
+
+			if err != nil {
+				return timeElapsed, err
+			}
+			logger.Log("Method created!")
+		}
+
+		integration, err := agwModel.getIntegration(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod)
+		// Create it if not found
 		if err != nil {
 			return timeElapsed, err
 		}
@@ -130,22 +164,22 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify <function-name>:${stageVariables.lambdaAlias}")
 		}
 
-		stage, notFound, err := agwModel.GetStage(targetDeployment.API.ID, *alias)
+		stage, notFound, err := agwModel.getStage(targetDeployment.API.ID, *alias)
 
 		if err != nil {
 			if notFound {
 
-				_, err := agwModel.CreateDeployment(targetDeployment.API.ID, *alias)
+				_, err := agwModel.createDeployment(targetDeployment.API.ID, *alias)
 
 				if err != nil {
 					return timeElapsed, err
 				}
 
-				if _, err = lambdaModel.AddPermission(targetDeployment.FunctionName, *alias); err != nil {
+				if _, err = lambdaModel.addPermission(targetDeployment.FunctionName, *alias); err != nil {
 					return timeElapsed, err
 				}
 
-				stage, _, err = agwModel.GetStage(targetDeployment.API.ID, *alias)
+				stage, _, err = agwModel.getStage(targetDeployment.API.ID, *alias)
 
 				if err != nil {
 					return timeElapsed, err
@@ -157,14 +191,14 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		}
 
 		if stage.Variables["lambdaModelAlias"] == "" || stage.Variables["lamdaAlias"] != *alias {
-			_, err := agwModel.UpdateStage(targetDeployment.API.ID, *alias)
+			_, err := agwModel.updateStage(targetDeployment.API.ID, *alias)
 
 			if err != nil {
 				return timeElapsed, err
 			}
 		}
 
-		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + *currentResource.Path)
+		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + "/" + targetDeployment.API.Resource)
 
 		logger.Log("Done")
 	}

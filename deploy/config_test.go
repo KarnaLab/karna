@@ -25,7 +25,7 @@ func TestCheckRequirementsWithValidInputs(t *testing.T) {
 	err := checkRequirements(&deploymentTest, alias)
 
 	if err == nil {
-		t.Log("Test PASSED with the right alias")
+		t.log("Test PASSED with the right alias")
 	} else {
 		t.Errorf(err.Error())
 	}
@@ -45,7 +45,7 @@ func TestCheckRequirementsWithInvalidInputs(t *testing.T) {
 	err := checkRequirements(&deploymentTest, alias)
 
 	if err != nil {
-		t.Log("Test FAILED because the wrong alias")
+		t.log("Test FAILED because the wrong alias")
 	} else {
 		t.Errorf("checkRequirement must not find alias in KarnaDeployment")
 	}
@@ -54,7 +54,7 @@ func TestGetConfigFileWithoutConfigFile(t *testing.T) {
 	_, err := getConfigFile()
 
 	if err != nil {
-		t.Log(err.Error())
+		t.log(err.Error())
 	} else {
 		t.Errorf("getConfigFile FAILED because it must not find config file")
 	}
@@ -78,7 +78,7 @@ func TestGetConfigFileWithConfigFile(t *testing.T) {
 	_, err = getConfigFile()
 
 	if err == nil {
-		t.Log("getConfigFile PASSED because it must find config file")
+		t.log("getConfigFile PASSED because it must find config file")
 	} else {
 		t.Errorf(err.Error())
 	}
@@ -103,7 +103,7 @@ func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
 	targetDeployment, _ := getTargetDeployment(&config, &target)
 
 	if len(targetDeployment.Src) > 0 {
-		t.Log("getTargetDeployment PASSED because it must find the deployment with the right target")
+		t.log("getTargetDeployment PASSED because it must find the deployment with the right target")
 	} else {
 		t.Errorf("getTargetDeployment FAILED because it must find the deployment")
 	}

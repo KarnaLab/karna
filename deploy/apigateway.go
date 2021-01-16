@@ -27,8 +27,12 @@ func (karnaAGW *KarnaAPIGatewayModel) init() (err error) {
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) GetIntegration(APIID, resourceID, httpMethod string) (result *apigateway.GetIntegrationResponse, err error) {
-	input := &apigateway.GetIntegrationInput{RestApiId: aws.String(APIID), ResourceId: aws.String(resourceID), HttpMethod: aws.String(httpMethod)}
+func (karnaAGW *KarnaAPIGatewayModel) getIntegration(APIID, resourceID, httpMethod string) (result *apigateway.GetIntegrationResponse, err error) {
+	input := &apigateway.GetIntegrationInput{
+		RestApiId:  aws.String(APIID),
+		ResourceId: aws.String(resourceID),
+		HttpMethod: aws.String(httpMethod),
+	}
 
 	req := karnaAGW.Client.GetIntegrationRequest(input)
 
@@ -37,7 +41,7 @@ func (karnaAGW *KarnaAPIGatewayModel) GetIntegration(APIID, resourceID, httpMeth
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) GetStage(APIID, stage string) (result *apigateway.GetStageResponse, notFound bool, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) getStage(APIID, stage string) (result *apigateway.GetStageResponse, notFound bool, err error) {
 	input := &apigateway.GetStageInput{RestApiId: aws.String(APIID), StageName: aws.String(stage)}
 
 	req := karnaAGW.Client.GetStageRequest(input)
@@ -54,7 +58,7 @@ func (karnaAGW *KarnaAPIGatewayModel) GetStage(APIID, stage string) (result *api
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) UpdateStage(APIID, stage string) (result *apigateway.UpdateStageResponse, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) updateStage(APIID, stage string) (result *apigateway.UpdateStageResponse, err error) {
 	var updatedValues = apigateway.PatchOperation{
 		Op:    apigateway.OpReplace,
 		Path:  aws.String("/variables/lambdaAlias"),
@@ -69,7 +73,7 @@ func (karnaAGW *KarnaAPIGatewayModel) UpdateStage(APIID, stage string) (result *
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) CreateStage(APIID, stageName, deploymentID string) (result *apigateway.CreateStageResponse, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) createStage(APIID, stageName, deploymentID string) (result *apigateway.CreateStageResponse, err error) {
 	input := &apigateway.CreateStageInput{
 		DeploymentId: aws.String(deploymentID),
 		RestApiId:    aws.String(APIID),
@@ -87,7 +91,7 @@ func (karnaAGW *KarnaAPIGatewayModel) CreateStage(APIID, stageName, deploymentID
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) CreateDeployment(APIID, stageName string) (result *apigateway.CreateDeploymentResponse, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) createDeployment(APIID, stageName string) (result *apigateway.CreateDeploymentResponse, err error) {
 	input := &apigateway.CreateDeploymentInput{
 		RestApiId:   aws.String(APIID),
 		StageName:   aws.String(stageName),
@@ -104,7 +108,7 @@ func (karnaAGW *KarnaAPIGatewayModel) CreateDeployment(APIID, stageName string) 
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) GetRESTAPI(APIID string) (result *apigateway.GetRestApiResponse, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) getRESTAPI(APIID string) (result *apigateway.GetRestApiResponse, err error) {
 	input := &apigateway.GetRestApiInput{
 		RestApiId: aws.String(APIID),
 	}
@@ -116,13 +120,54 @@ func (karnaAGW *KarnaAPIGatewayModel) GetRESTAPI(APIID string) (result *apigatew
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) GetResource(APIID, resourceID string) (result *apigateway.GetResourceResponse, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) getResource(APIID, resourceID string) (result *apigateway.GetResourceResponse, err error) {
 	input := &apigateway.GetResourceInput{
 		RestApiId:  aws.String(APIID),
 		ResourceId: aws.String(resourceID),
 	}
 
 	req := karnaAGW.Client.GetResourceRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
+
+func (karnaAGW *KarnaAPIGatewayModel) getResources(APIID string) (result *apigateway.GetResourcesResponse, err error) {
+	input := &apigateway.GetResourcesInput{
+		RestApiId: aws.String(APIID),
+	}
+
+	req := karnaAGW.Client.GetResourcesRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
+
+func (karnaAGW *KarnaAPIGatewayModel) createResource(APIID, parentID, pathPart string) (result *apigateway.CreateResourceResponse, err error) {
+	input := &apigateway.CreateResourceInput{
+		RestApiId: aws.String(APIID),
+		ParentId:  aws.String(parentID),
+		PathPart:  aws.String(pathPart),
+	}
+
+	req := karnaAGW.Client.CreateResourceRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
+
+func (karnaAGW *KarnaAPIGatewayModel) putMethod(APIID, resourceID, httpMethod string) (result *apigateway.PutMethodResponse, err error) {
+	input := &apigateway.PutMethodInput{
+		RestApiId:         aws.String(APIID),
+		ResourceId:        aws.String(resourceID),
+		HttpMethod:        aws.String(httpMethod),
+		AuthorizationType: aws.String("NONE"),
+	}
+
+	req := karnaAGW.Client.PutMethodRequest(input)
 
 	result, err = req.Send(context.Background())
 

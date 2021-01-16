@@ -25,7 +25,7 @@ func (KarnaS3Model *KarnaS3Model) init() {
 }
 
 //Upload => Will upload to S3 specified archive.
-func (KarnaS3Model *KarnaS3Model) Upload(deployment *KarnaDeployment, archivePath string) (err error) {
+func (KarnaS3Model *KarnaS3Model) upload(deployment *KarnaDeployment, archivePath string) (err error) {
 	part, _ := ioutil.ReadFile(archivePath)
 	input := &s3.PutObjectInput{
 		Body:   aws.ReadSeekCloser(strings.NewReader(string(part))),

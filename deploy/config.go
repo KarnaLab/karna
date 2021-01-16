@@ -1,37 +1,40 @@
 package deploy
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
+
+	"github.com/spf13/viper"
 )
 
 const (
-	fileName = "karna.json"
+	fileName = "karna"
 )
 
 func getConfigFile() (configFile *KarnaConfigFile, err error) {
+	viper.SetConfigName(fileName)
+	viper.SetConfigType("json")
+	viper.AddConfigPath(".")
 	dir, err := os.Getwd()
 
+	if err = viper.ReadInConfig(); err != nil {
+		return
+	}
+
+	viper.Unmarshal(&configFile)
+	fmt.Println(configFile)
+	// Check if all required keys are provided:
+
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadFile(dir + "/" + fileName)
-
 	if err != nil {
 		return nil, err
 	}
-
-	err = json.Unmarshal(data, &configFile)
 
 	configFile.Path = dir
-
-	if err != nil {
-		return nil, err
-	}
 
 	return
 }
