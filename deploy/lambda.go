@@ -269,9 +269,9 @@ func (karnaLambdaModel *KarnaLambdaModel) pruneVersion(wg *sync.WaitGroup, versi
 	wg.Done()
 }
 
-func (karnaLambdaModel *KarnaLambdaModel) addPermission(functionName, alias string) (result *lambda.AddPermissionResponse, err error) {
+func (karnaLambdaModel *KarnaLambdaModel) addPermission(functionURI string) (result *lambda.AddPermissionResponse, err error) {
 	input := &lambda.AddPermissionInput{
-		FunctionName: aws.String(functionName + ":" + alias),
+		FunctionName: aws.String(functionURI),
 		Action:       aws.String("lambda:InvokeFunction"),
 		Principal:    aws.String("apigateway.amazonaws.com"),
 		StatementId:  aws.String(strconv.Itoa(int(time.Now().UnixNano()))),

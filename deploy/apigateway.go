@@ -27,7 +27,7 @@ func (karnaAGW *KarnaAPIGatewayModel) init() (err error) {
 	return
 }
 
-func (karnaAGW *KarnaAPIGatewayModel) getIntegration(APIID, resourceID, httpMethod string) (result *apigateway.GetIntegrationResponse, err error) {
+func (karnaAGW *KarnaAPIGatewayModel) getIntegration(APIID, resourceID, httpMethod string) (result *apigateway.GetIntegrationResponse, notFound bool, err error) {
 	input := &apigateway.GetIntegrationInput{
 		RestApiId:  aws.String(APIID),
 		ResourceId: aws.String(resourceID),
@@ -37,6 +37,14 @@ func (karnaAGW *KarnaAPIGatewayModel) getIntegration(APIID, resourceID, httpMeth
 	req := karnaAGW.Client.GetIntegrationRequest(input)
 
 	result, err = req.Send(context.Background())
+
+	if aerr, ok := err.(awserr.Error); ok {
+		switch aerr.Code() {
+		case apigateway.ErrCodeNotFoundException:
+			notFound = true
+			break
+		}
+	}
 
 	return
 }
@@ -170,6 +178,39 @@ func (karnaAGW *KarnaAPIGatewayModel) putMethod(APIID, resourceID, httpMethod st
 	req := karnaAGW.Client.PutMethodRequest(input)
 
 	result, err = req.Send(context.Background())
+
+	return
+}
+
+func (karnaAGW *KarnaAPIGatewayModel) putIntegration(APIID, resourceID, httpMethod, functionName string) (result *apigateway.PutIntegrationResponse, err error) {
+	input := &apigateway.PutIntegrationInput{
+		RestApiId:             aws.String(APIID),
+		ResourceId:            aws.String(resourceID),
+		HttpMethod:            aws.String(httpMethod),
+		IntegrationHttpMethod: aws.String("POST"),
+		Type:                  apigateway.IntegrationTypeAwsProxy,
+		Uri:                   aws.String("arn:aws:apigateway:eu-west-3:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-3:078101256625:function:" + functionName + ":${stageVariables.lambdaAlias}/invocations"),
+	}
+
+	req := karnaAGW.Client.PutIntegrationRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	if err != nil {
+		return
+	}
+
+	inputResponse := &apigateway.PutIntegrationResponseInput{
+		RestApiId:         aws.String(APIID),
+		ResourceId:        aws.String(resourceID),
+		HttpMethod:        aws.String(httpMethod),
+		StatusCode:        aws.String("200"),
+		ResponseTemplates: map[string]string{"application/json": ""},
+	}
+
+	integrationReq := karnaAGW.Client.PutIntegrationResponseRequest(inputResponse)
+
+	_, err = integrationReq.Send(context.Background())
 
 	return
 }

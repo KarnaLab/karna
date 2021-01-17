@@ -126,7 +126,18 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		for _, resource := range resources.Items {
 			if *resource.Path == "/"+targetDeployment.API.Resource {
 				currentResource = *resource.Id
+
+				if _, ok := resource.ResourceMethods[targetDeployment.API.HTTPMethod]; !ok {
+					logger.Log("Method do not exists for this resource, try to create it...")
+
+					if _, err = agwModel.putMethod(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod); err != nil {
+						return timeElapsed, err
+					}
+
+					logger.Log("Method created!")
+				}
 			}
+			// TODO: Make it able to transverse all Resources tree.
 			if *resource.Path == "/" {
 				parentResource = resource
 			}
@@ -152,13 +163,31 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			logger.Log("Method created!")
 		}
 
-		integration, err := agwModel.getIntegration(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod)
-		// Create it if not found
+		var integrationURI string
+
+		integration, notFound, err := agwModel.getIntegration(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod)
+
 		if err != nil {
-			return timeElapsed, err
+			if notFound {
+				logger.Log("Try to create an integration for the method...")
+
+				newIntegration, err := agwModel.putIntegration(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod, targetDeployment.FunctionName)
+
+				if err != nil {
+					return timeElapsed, err
+				}
+
+				integrationURI = *newIntegration.Uri
+
+				logger.Log("Integration created!")
+			} else {
+				return timeElapsed, err
+			}
+		} else {
+			integrationURI = *integration.Uri
 		}
 
-		index := strings.Index(*integration.Uri, "${stageVariables.lambdaAlias}")
+		index := strings.Index(integrationURI, "${stageVariables.lambdaAlias}")
 
 		if index == -1 {
 			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify <function-name>:${stageVariables.lambdaAlias}")
@@ -175,7 +204,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 					return timeElapsed, err
 				}
 
-				if _, err = lambdaModel.addPermission(targetDeployment.FunctionName, *alias); err != nil {
+				if _, err = lambdaModel.addPermission(targetDeployment.FunctionName + ":" + *alias); err != nil {
 					return timeElapsed, err
 				}
 
