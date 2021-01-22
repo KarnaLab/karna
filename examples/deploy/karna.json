@@ -1,19 +1,16 @@
 {
-  "global": {},
-  "deployments": [
-    {
+  "deployments": {
+    "function-name": {
       "src": "services",
-      "file": "lambda.zip",
-      "functionName": "avgTest",
+      "file": "artchive.zip",
       "aliases": {
         "prod": "8",
-        "dev": "fixed",
-        "test": "9"
+        "dev": "fixed"
       },
       "prune": {
         "keep": 2,
         "alias": true
       }
     }
-  ]
+  }
 }

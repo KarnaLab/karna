@@ -23,12 +23,6 @@ func getConfigFile() (configFile *KarnaConfigFile, err error) {
 	}
 
 	viper.Unmarshal(&configFile)
-	fmt.Println(configFile)
-	// Check if all required keys are provided:
-
-	if err != nil {
-		return nil, err
-	}
 
 	if err != nil {
 		return nil, err
@@ -39,25 +33,20 @@ func getConfigFile() (configFile *KarnaConfigFile, err error) {
 	return
 }
 
-func getTargetDeployment(config *KarnaConfigFile, target *string) (deployment *KarnaDeployment, err error) {
-	for _, d := range config.Deployments {
-		if d.FunctionName == *target {
-			deployment = &d
-		}
-	}
-
-	if deployment == nil {
+func getTargetDeployment(config *KarnaConfigFile, functionName string) (deployment *KarnaDeployment, err error) {
+	if d, ok := config.Deployments[functionName]; ok {
+		deployment = &d
+	} else {
 		err = fmt.Errorf("Deployment not found in config file")
 	}
-
 	return
 }
 
 func checkRequirements(deployment *KarnaDeployment, alias string) (err error) {
-	requirements := [...]string{"FunctionName", "File", "Aliases", "Src"}
+	requirements := [...]string{"File", "Aliases", "Src"}
 
 	if deployment.Aliases[alias] == "" {
-		return fmt.Errorf("alias do not match with the config file")
+		return fmt.Errorf("Alias do not match with the config file")
 	}
 
 	for _, requirement := range requirements {

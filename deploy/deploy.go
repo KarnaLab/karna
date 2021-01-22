@@ -18,7 +18,7 @@ func init() {
 	s3Model.init()
 }
 
-func Run(target, alias *string) (timeElapsed string, err error) {
+func Run(functionName, alias *string) (timeElapsed string, err error) {
 	var logger KarnaLogger
 
 	startTime := time.Now()
@@ -29,7 +29,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		return timeElapsed, err
 	}
 
-	targetDeployment, err := getTargetDeployment(configFile, target)
+	targetDeployment, err := getTargetDeployment(configFile, *functionName)
 
 	if err != nil {
 		return timeElapsed, err
@@ -43,7 +43,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Done")
 
-	if _, err = lambdaModel.getFunctionByFunctionName(targetDeployment.FunctionName); err != nil {
+	if _, err = lambdaModel.getFunctionByFunctionName(*functionName); err != nil {
 		return timeElapsed, err
 	}
 
@@ -55,10 +55,10 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		source = configFile.Path + "/" + targetDeployment.Src + "/" + targetDeployment.Executable
 	}
 
-	var outputPathWithoutArchive = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias
-	var output = configFile.Path + "/.karna/" + targetDeployment.FunctionName + "/" + *alias + "/" + targetDeployment.File
+	var outputPathWithoutArchive = configFile.Path + "/.karna/" + *functionName + "/" + *alias
+	var output = configFile.Path + "/.karna/" + *functionName + "/" + *alias + "/" + targetDeployment.File
 
-	logger.Log("Building archive...")
+	logger.Log("Building archive in progress...")
 
 	if err = zipArchive(source, output, outputPathWithoutArchive, len(targetDeployment.Executable) > 0); err != nil {
 		return timeElapsed, err
@@ -71,42 +71,42 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 	}
 
 	logger.Log("Done")
-	logger.Log("Updating function code...")
+	logger.Log("Updating function code in progress...")
 
-	err = lambdaModel.UpdateFunctionCode(targetDeployment, output)
+	err = lambdaModel.UpdateFunctionCode(targetDeployment, output, *functionName)
 
 	if err != nil {
 		return timeElapsed, err
 	}
 
 	logger.Log("Done")
-	logger.Log("Publishing function...")
+	logger.Log("Publishing function in progress...")
 
-	if err = lambdaModel.PublishFunction(targetDeployment); err != nil {
+	if err = lambdaModel.PublishFunction(*functionName, targetDeployment); err != nil {
 		return timeElapsed, err
 	}
 
 	logger.Log("Done")
 
-	logger.Log("Synchronize alias...")
+	logger.Log("Synchronizing alias in progress...")
 
-	if err = lambdaModel.syncAlias(targetDeployment, *alias); err != nil {
+	if err = lambdaModel.syncAlias(targetDeployment, *alias, *functionName); err != nil {
 		return timeElapsed, err
 	}
 
 	logger.Log("Done")
 
 	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
-		logger.Log("Prune versions...")
+		logger.Log("Prune versions in progress...")
 
-		if err = lambdaModel.prune(targetDeployment); err != nil {
+		if err = lambdaModel.prune(*functionName, targetDeployment); err != nil {
 			return timeElapsed, err
 		}
 		logger.Log("Done")
 	}
 
 	if len(targetDeployment.API.ID) > 0 {
-		logger.Log("Deploy to API Gateway...")
+		logger.Log("Deployment to API Gateway in progress...")
 
 		_, err := agwModel.getRESTAPI(targetDeployment.API.ID)
 
@@ -128,13 +128,13 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 				currentResource = *resource.Id
 
 				if _, ok := resource.ResourceMethods[targetDeployment.API.HTTPMethod]; !ok {
-					logger.Log("Method do not exists for this resource, try to create it...")
+					logger.Log("Method do not exists for this resource, creation in progress...")
 
 					if _, err = agwModel.putMethod(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod); err != nil {
 						return timeElapsed, err
 					}
 
-					logger.Log("Method created!")
+					logger.Log("Done")
 				}
 			}
 			// TODO: Make it able to transverse all Resources tree.
@@ -144,7 +144,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		}
 
 		if currentResource == "" {
-			logger.Log("Resource do not exists, try to create it...")
+			logger.Log("Resource do not exists, creation in progress...")
 			resource, err := agwModel.createResource(targetDeployment.API.ID, *parentResource.Id, targetDeployment.API.Resource)
 
 			currentResource = *resource.Id
@@ -152,15 +152,15 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			if err != nil {
 				return timeElapsed, err
 			}
-			logger.Log("Resource created!")
+			logger.Log("Done")
 
-			logger.Log("Try to create method into resource...")
+			logger.Log("Method creation in progress...")
 			_, err = agwModel.putMethod(targetDeployment.API.ID, *resource.Id, targetDeployment.API.HTTPMethod)
 
 			if err != nil {
 				return timeElapsed, err
 			}
-			logger.Log("Method created!")
+			logger.Log("Done")
 		}
 
 		var integrationURI string
@@ -171,7 +171,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			if notFound {
 				logger.Log("Try to create an integration for the method...")
 
-				newIntegration, err := agwModel.putIntegration(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod, targetDeployment.FunctionName)
+				newIntegration, err := agwModel.putIntegration(targetDeployment.API.ID, currentResource, targetDeployment.API.HTTPMethod, *functionName)
 
 				if err != nil {
 					return timeElapsed, err
@@ -179,7 +179,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 
 				integrationURI = *newIntegration.Uri
 
-				logger.Log("Integration created!")
+				logger.Log("Done")
 			} else {
 				return timeElapsed, err
 			}
@@ -190,7 +190,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 		index := strings.Index(integrationURI, "${stageVariables.lambdaAlias}")
 
 		if index == -1 {
-			return timeElapsed, fmt.Errorf("Integration method is not valid. Must specify <function-name>:${stageVariables.lambdaAlias}")
+			return timeElapsed, fmt.Errorf("Integration method is not valid. You must specify <function-name>:${stageVariables.lambdaAlias}")
 		}
 
 		stage, notFound, err := agwModel.getStage(targetDeployment.API.ID, *alias)
@@ -204,7 +204,7 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 					return timeElapsed, err
 				}
 
-				if _, err = lambdaModel.addPermission(targetDeployment.FunctionName + ":" + *alias); err != nil {
+				if _, err = lambdaModel.addPermission(*functionName + ":" + *alias); err != nil {
 					return timeElapsed, err
 				}
 
@@ -227,9 +227,8 @@ func Run(target, alias *string) (timeElapsed string, err error) {
 			}
 		}
 
-		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + "/" + targetDeployment.API.Resource)
-
 		logger.Log("Done")
+		logger.Log("API available at: https://" + targetDeployment.API.ID + ".execute-api." + agwModel.Client.Region + ".amazonaws.com/" + *alias + "/" + targetDeployment.API.Resource)
 	}
 
 	timeElapsed = time.Since(startTime).String()

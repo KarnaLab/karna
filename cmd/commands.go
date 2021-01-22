@@ -19,10 +19,10 @@ var cmdDeploy = &cobra.Command{
 		logger.Log("Deployment in progress...")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		target, _ := cmd.Flags().GetString("target")
+		functionName, _ := cmd.Flags().GetString("function-name")
 		alias, _ := cmd.Flags().GetString("alias")
 
-		if elapsed, err := deploy.Run(&target, &alias); err != nil {
+		if elapsed, err := deploy.Run(&functionName, &alias); err != nil {
 			logger.Error(err.Error())
 			os.Exit(1)
 		} else {
@@ -32,13 +32,13 @@ var cmdDeploy = &cobra.Command{
 }
 
 func init() {
-	var target string
+	var functionName string
 	var alias string
 
-	cmdDeploy.Flags().StringVarP(&target, "target", "t", "", "Function to deploy (JSON key into your config file)")
+	cmdDeploy.Flags().StringVarP(&functionName, "function-name", "f", "", "Function to deploy (JSON key into your config file)")
 	cmdDeploy.Flags().StringVarP(&alias, "alias", "a", "", "Alias to publish")
 
-	cmdDeploy.MarkFlagRequired("target")
+	cmdDeploy.MarkFlagRequired("function-name")
 	cmdDeploy.MarkFlagRequired("alias")
 
 	rootCmd.AddCommand(cmdDeploy)

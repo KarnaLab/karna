@@ -33,20 +33,19 @@ type KarnaAPIDeployment struct {
 
 //KarnaDeployment => Karna model for Deployment key in Karna config file.
 type KarnaDeployment struct {
-	Src          string               `json:"src"`
-	Key          string               `json:"key,omitempty"`
-	File         string               `json:"file"`
-	FunctionName string               `json:"functionName"`
-	Aliases      map[string]string    `json:"aliases,omitempty"`
-	Bucket       string               `json:"bucket,omitempty"`
-	Prune        KarnaDeploymentPrune `json:"prune,omitempty"`
-	Executable   string               `json:"executable,omitempty"`
-	API          KarnaAPIDeployment   `json:"api,omitempty"`
+	Src        string               `json:"src"`
+	Key        string               `json:"key,omitempty"`
+	File       string               `json:"file"`
+	Aliases    map[string]string    `json:"aliases,omitempty"`
+	Bucket     string               `json:"bucket,omitempty"`
+	Prune      KarnaDeploymentPrune `json:"prune,omitempty"`
+	Executable string               `json:"executable,omitempty"`
+	API        KarnaAPIDeployment   `json:"api,omitempty"`
 }
 
 //KarnaConfigFile => Karna model for Karna config file.
 type KarnaConfigFile struct {
-	Global      map[string]string `json:"global"`
-	Deployments []KarnaDeployment `json:"deployments"`
-	Path        string            `json:",omitempty"`
+	Global      map[string]string          `json:"global"`
+	Deployments map[string]KarnaDeployment `json:"deployments"`
+	Path        string                     `json:",omitempty"`
 }
