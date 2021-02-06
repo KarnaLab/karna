@@ -15,7 +15,7 @@ func TestZipArchive(t *testing.T) {
 
 	err = zipArchive("./test", "./lambda.zip")
 	if err == nil {
-		t.Log("Test PASSED because it build the archive with its content")
+		t.log("Test PASSED because it build the archive with its content")
 	} else {
 		t.Errorf(err.Error())
 	}

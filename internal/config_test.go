@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/karnalab/karna/core"
 )
 
 const (
@@ -15,7 +13,7 @@ const (
 
 func TestCheckRequirementsWithValidInputs(t *testing.T) {
 	alias := "dev"
-	deploymentTest := core.KarnaDeployment{
+	deploymentTest := KarnaDeployment{
 		Src:          "src",
 		Key:          "key",
 		File:         "file",
@@ -27,7 +25,7 @@ func TestCheckRequirementsWithValidInputs(t *testing.T) {
 	err := checkRequirements(&deploymentTest, alias)
 
 	if err == nil {
-		t.Log("Test PASSED with the right alias")
+		t.log("Test PASSED with the right alias")
 	} else {
 		t.Errorf(err.Error())
 	}
@@ -35,7 +33,7 @@ func TestCheckRequirementsWithValidInputs(t *testing.T) {
 
 func TestCheckRequirementsWithInvalidInputs(t *testing.T) {
 	alias := "wrongAlias"
-	deploymentTest := core.KarnaDeployment{
+	deploymentTest := KarnaDeployment{
 		Src:          "src",
 		Key:          "key",
 		File:         "file",
@@ -47,7 +45,7 @@ func TestCheckRequirementsWithInvalidInputs(t *testing.T) {
 	err := checkRequirements(&deploymentTest, alias)
 
 	if err != nil {
-		t.Log("Test FAILED because the wrong alias")
+		t.log("Test FAILED because the wrong alias")
 	} else {
 		t.Errorf("checkRequirement must not find alias in KarnaDeployment")
 	}
@@ -56,7 +54,7 @@ func TestGetConfigFileWithoutConfigFile(t *testing.T) {
 	_, err := getConfigFile()
 
 	if err != nil {
-		t.Log(err.Error())
+		t.log(err.Error())
 	} else {
 		t.Errorf("getConfigFile FAILED because it must not find config file")
 	}
@@ -64,7 +62,7 @@ func TestGetConfigFileWithoutConfigFile(t *testing.T) {
 
 func TestGetConfigFileWithConfigFile(t *testing.T) {
 	functionName := "test"
-	deployment := &core.KarnaDeployment{
+	deployment := &KarnaDeployment{
 		Src:          functionName,
 		File:         "lambda.zip",
 		FunctionName: functionName,
@@ -80,7 +78,7 @@ func TestGetConfigFileWithConfigFile(t *testing.T) {
 	_, err = getConfigFile()
 
 	if err == nil {
-		t.Log("getConfigFile PASSED because it must find config file")
+		t.log("getConfigFile PASSED because it must find config file")
 	} else {
 		t.Errorf(err.Error())
 	}
@@ -88,7 +86,7 @@ func TestGetConfigFileWithConfigFile(t *testing.T) {
 }
 
 func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
-	deployment := core.KarnaDeployment{
+	deployment := KarnaDeployment{
 		Src:          "functionName",
 		File:         "lambda.zip",
 		FunctionName: "functionName",
@@ -97,15 +95,15 @@ func TestGetTargetDeploymentWithCorrectTarget(t *testing.T) {
 			"prod": "1",
 		},
 	}
-	config := core.KarnaConfigFile{
+	config := KarnaConfigFile{
 		Global:      map[string]string{},
-		Deployments: []core.KarnaDeployment{deployment},
+		Deployments: []KarnaDeployment{deployment},
 	}
 	target := "functionName"
-	targetDeployment := getTargetDeployment(&config, &target)
+	targetDeployment, _ := getTargetDeployment(&config, &target)
 
 	if len(targetDeployment.Src) > 0 {
-		t.Log("getTargetDeployment PASSED because it must find the deployment with the right target")
+		t.log("getTargetDeployment PASSED because it must find the deployment with the right target")
 	} else {
 		t.Errorf("getTargetDeployment FAILED because it must find the deployment")
 	}
