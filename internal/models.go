@@ -19,10 +19,10 @@ type KarnaAGWAPI struct {
 	Stages    []KarnaAGWStage
 }
 
-//KarnaDeploymentPrune => Karna model for Prune option in Karna config file.
-type KarnaDeploymentPrune struct {
-	Alias bool `json:"alias,omitempty"`
-	Keep  int  `json:"keep,omitempty"`
+//KarnaDeploymentVersions => Karna model for Prune option in Karna config file.
+type KarnaDeploymentVersions struct {
+	Keep int    `json:"keep,omitempty"`
+	From string `json:"from,omitempty"`
 }
 
 type KarnaAPIDeployment struct {
@@ -33,14 +33,14 @@ type KarnaAPIDeployment struct {
 
 //KarnaDeployment => Karna model for Deployment key in Karna config file.
 type KarnaDeployment struct {
-	Src        string               `json:"src"`
-	Key        string               `json:"key,omitempty"`
-	File       string               `json:"file"`
-	Aliases    map[string]string    `json:"aliases,omitempty"`
-	Bucket     string               `json:"bucket,omitempty"`
-	Prune      KarnaDeploymentPrune `json:"prune,omitempty"`
-	Executable string               `json:"executable,omitempty"`
-	API        KarnaAPIDeployment   `json:"api,omitempty"`
+	Src        string                  `json:"src"`
+	Key        string                  `json:"key,omitempty"`
+	File       string                  `json:"file"`
+	Aliases    map[string]string       `json:"aliases,omitempty"`
+	Bucket     string                  `json:"bucket,omitempty"`
+	Versions   KarnaDeploymentVersions `json:"versions,omitempty"`
+	Executable string                  `json:"executable,omitempty"`
+	API        KarnaAPIDeployment      `json:"api,omitempty"`
 }
 
 //KarnaConfigFile => Karna model for Karna config file.

@@ -18,7 +18,46 @@ func init() {
 	s3Model.init()
 }
 
-func Run(functionName, alias *string) (timeElapsed string, err error) {
+func RemoveAlias(functionName, alias *string) (timeElapsed string, err error) {
+	var logger KarnaLogger
+
+	startTime := time.Now()
+
+	configFile, err := getConfigFile()
+
+	if err != nil {
+		return timeElapsed, err
+	}
+
+	targetDeployment, err := getTargetDeployment(configFile, *functionName)
+
+	if err != nil {
+		return timeElapsed, err
+	}
+
+	logger.Log("Checking if alias exists...")
+
+	aliases, _ := lambdaModel.getAliasesByFunctionName(*functionName)
+
+	if a := findAlias(aliases, *alias); a == nil {
+		return timeElapsed, fmt.Errorf("Alias do not exists, operation aborted")
+	}
+
+	logger.Log("Done")
+
+	logger.Log("Removing in progress...")
+
+	if err := lambdaModel.deleteAlias(*functionName, *alias, targetDeployment); err != nil {
+		return timeElapsed, err
+	}
+
+	logger.Log("Done")
+
+	timeElapsed = time.Since(startTime).String()
+	return
+}
+
+func Deploy(functionName, alias *string) (timeElapsed string, err error) {
 	var logger KarnaLogger
 
 	startTime := time.Now()
@@ -96,10 +135,10 @@ func Run(functionName, alias *string) (timeElapsed string, err error) {
 
 	logger.Log("Done")
 
-	if (targetDeployment.Prune.Alias) || (targetDeployment.Prune.Keep > 0) {
-		logger.Log("Prune versions in progress...")
+	if ok := targetDeployment.Versions.Keep > 0; ok {
+		logger.Log("Versions removing in progress...")
 
-		if err = lambdaModel.prune(*functionName, targetDeployment); err != nil {
+		if err = lambdaModel.removeVersions(*functionName, targetDeployment); err != nil {
 			return timeElapsed, err
 		}
 		logger.Log("Done")

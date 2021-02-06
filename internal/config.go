@@ -49,6 +49,21 @@ func checkRequirements(deployment *KarnaDeployment, alias string) (err error) {
 		return fmt.Errorf("Alias do not match with the config file")
 	}
 
+	if deployment.Versions.Keep > 0 {
+		possibleValues := []string{"each", "smaller"}
+		var found bool
+
+		for _, val := range possibleValues {
+			if val == deployment.Versions.From {
+				found = true
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("Possible values for <from> property: <each|smaller>")
+		}
+	}
+
 	for _, requirement := range requirements {
 
 		a := reflect.Indirect(reflect.ValueOf(deployment)).FieldByName(requirement)
@@ -64,5 +79,6 @@ func checkRequirements(deployment *KarnaDeployment, alias string) (err error) {
 			}
 		}
 	}
+
 	return
 }

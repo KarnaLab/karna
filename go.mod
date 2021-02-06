@@ -14,6 +14,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/johnnadratowski/golang-neo4j-bolt-driver v0.0.0-20181101021923-6b24c0085aae
 	github.com/logrusorgru/aurora v0.0.0-20191017060258-dc85c304c434
+	github.com/mattn/go-colorable v0.0.9
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/nwaples/rardecode v1.1.0 // indirect

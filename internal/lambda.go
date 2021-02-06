@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"sort"
 	"strconv"
@@ -63,8 +64,13 @@ func (karnaLambdaModel *KarnaLambdaModel) UpdateFunctionCode(deployment *KarnaDe
 
 	req := karnaLambdaModel.Client.UpdateFunctionCodeRequest(&input)
 
-	_, err = req.Send(context.Background())
+	function, err := req.Send(context.Background())
 
+	if err != nil {
+		return
+	}
+
+	logger.Log("Current version: " + *function.Version)
 	return
 }
 
@@ -125,11 +131,11 @@ func (karnaLambdaModel *KarnaLambdaModel) syncAlias(deployment *KarnaDeployment,
 	aliases, _ := karnaLambdaModel.getAliasesByFunctionName(functionName)
 
 	if a := findAlias(aliases, alias); a == nil {
-		logger.Log("creation of alias: " + alias)
-		karnaLambdaModel.createAlias(deployment, alias, functionName)
+		logger.Log("Creating alias: " + alias)
+		err = karnaLambdaModel.createAlias(deployment, alias, functionName)
 	} else {
-		logger.Log("updating alias: " + alias)
-		karnaLambdaModel.updateAlias(deployment, alias, functionName)
+		logger.Log("Updating alias: " + alias)
+		err = karnaLambdaModel.updateAlias(deployment, alias, functionName)
 	}
 
 	return
@@ -162,11 +168,19 @@ func (karnaLambdaModel *KarnaLambdaModel) createAlias(deployment *KarnaDeploymen
 
 func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeployment, alias, functionName string) (err error) {
 	var version string
+	functions, err := karnaLambdaModel.getVersionsByFunction(functionName)
+
+	if err != nil {
+		return
+	}
 
 	if deployment.Aliases[alias] == "fixed" {
-		versions, _ := karnaLambdaModel.getVersionsByFunction(functionName)
-		version = *versions[len(versions)-1].Version
+		version = *functions[len(functions)-1].Version
 	} else {
+		if ok := findVersion(functions, deployment.Aliases[alias]); !ok {
+			return fmt.Errorf("Version specified do not exists, operation aborted")
+		}
+
 		version = deployment.Aliases[alias]
 	}
 
@@ -183,27 +197,24 @@ func (karnaLambdaModel *KarnaLambdaModel) updateAlias(deployment *KarnaDeploymen
 	return
 }
 
-//Prune => Expose Prune to KarnaLambdaModel. Will remove alias and/or versions.
-func (karnaLambdaModel *KarnaLambdaModel) prune(functionName string, deployment *KarnaDeployment) (err error) {
-	if deployment.Prune.Alias {
-		aliases, _ := karnaLambdaModel.getAliasesByFunctionName(functionName)
-
-		for _, a := range aliases {
-			if _, ok := deployment.Aliases[*a.Name]; !ok {
-				logger.Log("prune alias: " + *a.Name)
-
-				input := &lambda.DeleteAliasInput{
-					Name:         aws.String(*a.Name),
-					FunctionName: aws.String(functionName),
-				}
-
-				req := karnaLambdaModel.Client.DeleteAliasRequest(input)
-				_, err = req.Send(context.Background())
-			}
-		}
+func (karnaLambdaModel *KarnaLambdaModel) deleteAlias(functionName, alias string, deployment *KarnaDeployment) (err error) {
+	input := &lambda.DeleteAliasInput{
+		Name:         aws.String(alias),
+		FunctionName: aws.String(functionName),
 	}
 
-	if deployment.Prune.Keep > 0 {
+	req := karnaLambdaModel.Client.DeleteAliasRequest(input)
+	_, err = req.Send(context.Background())
+	return
+}
+
+/**
+* -|1|-|2|-|3|-|dev:4|-|5|-|6|-|7|-|prod:8|-|9|-|latest:10|
+* => keep 2 - alias prod, versions removed => [1]
+* => keep 1 - alias dev, versions removed => [1,2,6]
+ */
+func (karnaLambdaModel *KarnaLambdaModel) removeVersions(functionName string, deployment *KarnaDeployment) (err error) {
+	if deployment.Versions.Keep > 0 {
 		var versionsWithAliases []int
 		var versionsToPrune []int
 		var versionsToKeep []int
@@ -218,32 +229,46 @@ func (karnaLambdaModel *KarnaLambdaModel) prune(functionName string, deployment 
 
 		sort.Ints(versionsWithAliases)
 
-		for _, v := range versionsWithAliases {
-			step := deployment.Prune.Keep
-			min := v - step
-			max := v + step
+		if deployment.Versions.From == "each" {
+			for _, v := range versionsWithAliases {
+				step := deployment.Versions.Keep
+				min := v - step
+				max := v + step
 
-			if min <= 1 {
-				min = 1
+				if min <= 1 {
+					min = 1
+				}
+
+				rangeOfVersions := makeRange(min, max)
+				versionsToKeep = append(versionsToKeep, rangeOfVersions...)
 			}
 
-			rangeOfVersions := makeRange(min, max)
-			versionsToKeep = append(versionsToKeep, rangeOfVersions...)
-		}
+			for _, f := range versions {
+				version, err := strconv.Atoi(*f.Version)
 
-		for _, f := range versions {
-			version, err := strconv.Atoi(*f.Version)
+				if err == nil {
+					if ok := findInt(version, versionsToKeep); !ok {
+						versionsToPrune = append(versionsToPrune, version)
+					}
+				}
+			}
+		} else {
+			minVersion := versionsWithAliases[0]
 
-			if err == nil {
-				if ok := findInt(version, versionsToKeep); !ok {
-					versionsToPrune = append(versionsToPrune, version)
+			for _, f := range versions {
+				version, err := strconv.Atoi(*f.Version)
+
+				if err == nil {
+					if version < (minVersion - deployment.Versions.Keep) {
+						versionsToPrune = append(versionsToPrune, version)
+					}
 				}
 			}
 		}
 
 		pruneVersionsCount := strconv.Itoa(len(versionsToPrune))
 
-		logger.Log("prune: " + pruneVersionsCount + " version(s)")
+		logger.Log(pruneVersionsCount + " version(s) removed")
 
 		var wg sync.WaitGroup
 

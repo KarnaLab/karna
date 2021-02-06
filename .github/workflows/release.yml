@@ -1,0 +1,32 @@
+name: Release
+on:
+  push:
+    branches: feature/v2
+
+jobs:
+  deploy:
+    name: Release on ${{ matrix.os }} for version ${{ matrix.go }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        go: ["1.15"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build
+        run: go build .
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: karna
+          tag: ${{ github.ref }}
+      - name: Deploy Docker image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: karnalab/karna/karna
+          tag_with_ref: true
