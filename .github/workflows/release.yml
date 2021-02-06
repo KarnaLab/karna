@@ -1,8 +1,8 @@
 name: Release
 on:
   push:
-    branches: feature/v2
-
+    tags:
+      - v*
 jobs:
   deploy:
     name: Release on ${{ matrix.os }} for version ${{ matrix.go }}
@@ -16,11 +16,14 @@ jobs:
         uses: actions/checkout@v1
       - name: Build
         run: go build .
+      - name: Make tar
+        run: |
+          tar -czf karna-linux-amd64.tar.gz karna
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: karna
+          file: karna-linux-amd64.tar.gz
           tag: ${{ github.ref }}
       - name: Deploy Docker image
         uses: docker/build-push-action@v1
