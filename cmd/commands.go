@@ -56,13 +56,13 @@ func init() {
 	var functionName string
 	var alias string
 
-	cmdDeploy.Flags().StringVarP(&functionName, "function-name", "f", "", "Function to deploy (JSON key into your config file)")
+	cmdDeploy.Flags().StringVarP(&functionName, "function-name", "f", "", "Function to deploy")
 	cmdDeploy.Flags().StringVarP(&alias, "alias", "a", "", "Alias to publish")
 
 	cmdDeploy.MarkFlagRequired("function-name")
 	cmdDeploy.MarkFlagRequired("alias")
 
-	cmdAlias.Flags().StringVarP(&functionName, "function-name", "f", "", "Function to deploy (JSON key into your config file)")
+	cmdAlias.Flags().StringVarP(&functionName, "function-name", "f", "", "Function which targeted alias is located")
 	cmdAlias.Flags().StringVarP(&alias, "alias", "a", "", "Alias to publish")
 
 	cmdAlias.MarkFlagRequired("function-name")

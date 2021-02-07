@@ -214,3 +214,16 @@ func (karnaAGW *KarnaAPIGatewayModel) putIntegration(APIID, resourceID, httpMeth
 
 	return
 }
+
+func (karnaAGW *KarnaAPIGatewayModel) deleteStage(APIID, stageName string) (result *apigateway.DeleteStageResponse, err error) {
+	input := &apigateway.DeleteStageInput{
+		RestApiId: aws.String(APIID),
+		StageName: aws.String(stageName),
+	}
+
+	req := karnaAGW.Client.DeleteStageRequest(input)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
