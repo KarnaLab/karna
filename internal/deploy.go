@@ -51,6 +51,16 @@ func RemoveAlias(functionName, alias *string) (timeElapsed string, err error) {
 		return timeElapsed, err
 	}
 
+	logger.Log("Alias removed")
+
+	if len(targetDeployment.API.ID) > 0 {
+		if _, err := agwModel.deleteStage(targetDeployment.API.ID, *alias); err != nil {
+			return timeElapsed, err
+		}
+
+		logger.Log("Stage removed")
+	}
+
 	logger.Log("Done")
 
 	timeElapsed = time.Since(startTime).String()
