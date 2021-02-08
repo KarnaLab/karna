@@ -1,6 +1,7 @@
 # Karna
 
 ![CodeQL](https://github.com/KarnaLab/karna/workflows/CodeQL/badge.svg?branch=master)
+![Release](https://github.com/KarnaLab/karna/workflows/Release/badge.svg)
 
 ## Installation
 
