@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/apigateway"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 )
@@ -14,6 +15,7 @@ var logger *KarnaLogger
 
 type KarnaAPIGatewayModel struct {
 	Client *apigateway.Client
+	Sts    *sts.Client
 }
 
 func (karnaAGW *KarnaAPIGatewayModel) init() (err error) {
@@ -24,6 +26,9 @@ func (karnaAGW *KarnaAPIGatewayModel) init() (err error) {
 	}
 
 	karnaAGW.Client = apigateway.New(cfg)
+
+	karnaAGW.Sts = sts.New(cfg)
+
 	return
 }
 
@@ -182,14 +187,35 @@ func (karnaAGW *KarnaAPIGatewayModel) putMethod(APIID, resourceID, httpMethod st
 	return
 }
 
+func (karnaAGW *KarnaAPIGatewayModel) getAccountID() (result *sts.GetAccessKeyInfoResponse, err error) {
+	credentials, err := karnaAGW.Client.Credentials.Retrieve()
+	stsInput := &sts.GetAccessKeyInfoInput{
+		AccessKeyId: aws.String(credentials.AccessKeyID),
+	}
+
+	req := karnaAGW.Sts.GetAccessKeyInfoRequest(stsInput)
+
+	result, err = req.Send(context.Background())
+
+	return
+}
+
 func (karnaAGW *KarnaAPIGatewayModel) putIntegration(APIID, resourceID, httpMethod, functionName string) (result *apigateway.PutIntegrationResponse, err error) {
+	region := karnaAGW.Client.Region
+
+	account, err := karnaAGW.getAccountID()
+
+	if err != nil {
+		return
+	}
+
 	input := &apigateway.PutIntegrationInput{
 		RestApiId:             aws.String(APIID),
 		ResourceId:            aws.String(resourceID),
 		HttpMethod:            aws.String(httpMethod),
 		IntegrationHttpMethod: aws.String("POST"),
 		Type:                  apigateway.IntegrationTypeAwsProxy,
-		Uri:                   aws.String("arn:aws:apigateway:eu-west-3:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-3:078101256625:function:" + functionName + ":${stageVariables.lambdaAlias}/invocations"),
+		Uri:                   aws.String("arn:aws:apigateway:" + region + ":lambda:path/2015-03-31/functions/arn:aws:lambda:" + region + ":" + *account.Account + ":function:" + functionName + ":${stageVariables.lambdaAlias}/invocations"),
 	}
 
 	req := karnaAGW.Client.PutIntegrationRequest(input)
