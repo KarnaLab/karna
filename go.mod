@@ -3,7 +3,7 @@ module github.com/karnalab/karna
 go 1.15
 
 require (
-	github.com/aws/aws-sdk-go v1.25.19
+	github.com/aws/aws-sdk-go v1.34.0
 	github.com/aws/aws-sdk-go-v2 v0.15.0
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.11.3 // indirect
